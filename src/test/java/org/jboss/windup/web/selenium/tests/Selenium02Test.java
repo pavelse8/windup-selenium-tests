@@ -1,29 +1,38 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.awt.AWTException;
 import java.io.File;
 
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+//import junit.framework.TestCase;
+import org.jboss.windup.web.selenium.pages.CreateProject;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+//import org.junit.runners.MethodSorters;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * Analyse multiple applications using new Project Selenium02Test
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium02Test extends TestCase {
+
+public class Selenium02Test extends TestBase {
 
 	private CreateProject selenium;
 
+	@BeforeEach
 	public void setUp() {
 		selenium = new CreateProject();
-        System.out.println(new Object() {}
-                .getClass()
-                .getEnclosingMethod()
-                .getName() + " complete");
+
+		System.out.println(new Object() {}
+				.getClass()
+				.getEnclosingMethod()
+				.getName() + " complete");
 	}
 
+	@Test
 	public void test01CreateProject() {
 
 		assertEquals(selenium.getRhamtBaseUrl() + "rhamt-web/project-list", selenium.checkURL());
@@ -54,6 +63,7 @@ public class Selenium02Test extends TestCase {
                 .getName() + " complete");
 	}
 
+	@Test
 	public void test02AddApps () throws AWTException, InterruptedException {
 		test01CreateProject();
 
@@ -94,6 +104,7 @@ public class Selenium02Test extends TestCase {
                 .getName() + " complete");
 	}
 
+	@Test
 	public void test03RunAnalysis () throws AWTException, InterruptedException {
 
 	    test02AddApps();
@@ -132,12 +143,10 @@ public class Selenium02Test extends TestCase {
                 .getName() + " complete");
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 	{
-		selenium.closeDriver();
-
-        System.out.println(new Object() {}
+		System.out.println(new Object() {}
                 .getClass()
                 .getEnclosingMethod()
                 .getName() + " complete");

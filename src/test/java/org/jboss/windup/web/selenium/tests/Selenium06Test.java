@@ -1,29 +1,35 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.awt.AWTException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+import org.jboss.windup.web.selenium.pages.AppLevel;
+import org.jboss.windup.web.selenium.pages.CreateProject;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+//import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.NoSuchElementException;
 
-import junit.framework.TestCase;
+//import junit.framework.TestCase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * Analysis with advanced options - Creates new Project Selenium06Test then verifies the advanced options
  * have generated additional report content
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium06Test extends TestCase {
+
+public class Selenium06Test {
 
     CreateProject seleniumCreate;
     AppLevel seleniumAppLevel;
 
 	public void setUp() {}
 
+	@Test
 	public void test01CreateProjectAdvancedOptions() throws AWTException, InterruptedException {
 
 		System.out.println (new Object() {}.getClass().getName() + ":" +
@@ -127,6 +133,7 @@ public class Selenium06Test extends TestCase {
 
 	}
 
+	@Test
 	public void test02CheckReports() throws InterruptedException, AWTException {
 	    seleniumAppLevel = new AppLevel();
 
@@ -155,7 +162,7 @@ public class Selenium06Test extends TestCase {
 		list.add("Send Feedback");
 		list.add("Tattletale");
 
-		ArrayList<String> collectedList = seleniumAppLevel.getTabs();
+		ArrayList<String> collectedList = seleniumAppLevel.getHeader();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 		
@@ -175,18 +182,18 @@ public class Selenium06Test extends TestCase {
 
 	}
 
-    @After
+	@Test
     public void tearDown()
     {
-		if (seleniumCreate != null)
-		{
-			seleniumCreate.closeDriver();
-		}
-
-		if (seleniumAppLevel != null)
-        {
-			seleniumAppLevel.closeDriver();
-		}
+//		if (seleniumCreate != null)
+//		{
+//			seleniumCreate.closeDriver();
+//		}
+//
+//		if (seleniumAppLevel != null)
+//        {
+//			seleniumAppLevel.closeDriver();
+//		}
 
   	}
 

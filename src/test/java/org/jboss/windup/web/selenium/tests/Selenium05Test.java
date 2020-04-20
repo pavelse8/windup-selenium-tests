@@ -1,22 +1,28 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.awt.AWTException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+//import junit.framework.TestCase;
+import org.jboss.windup.web.selenium.pages.AppLevel;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+//import org.junit.runners.MethodSorters;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*Navigate through Application Level Reports for project Selenium02Test
  *for application AdministracionEfectivo.ear, then for application AdditionWithSecurity-EAR-0.01.ear
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium05Test extends TestCase {
+
+public class Selenium05Test {
 
 	private AppLevel selenium;
 
+	@BeforeEach
 	public void setUp() throws InterruptedException {
 		selenium = new AppLevel();
 
@@ -28,6 +34,7 @@ public class Selenium05Test extends TestCase {
 		selenium.clickApplication("AdministracionEfectivo.ear");
 	}
 
+	@Test
 	public void test01App1Tabs() throws InterruptedException, AWTException {
 
         System.out.println (new Object() {}.getClass().getName() + ":" +
@@ -50,7 +57,7 @@ public class Selenium05Test extends TestCase {
 		list.add("About");
 		list.add("Send Feedback");
 		
-		ArrayList<String> collectedList = selenium.getTabs();
+		ArrayList<String> collectedList = selenium.getHeader();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 		
@@ -209,6 +216,7 @@ public class Selenium05Test extends TestCase {
 		assertEquals(44, selenium.ignoreFile());
 	}
 
+	@Test
 	public void test02App2Tabs() throws InterruptedException {
 
 		selenium.clickTab("All Applications");
@@ -229,7 +237,7 @@ public class Selenium05Test extends TestCase {
 		list.add("About");
 		list.add("Send Feedback");
 		
-		ArrayList<String> collectedList = selenium.getTabs();
+		ArrayList<String> collectedList = selenium.getHeader();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 		
@@ -264,10 +272,10 @@ public class Selenium05Test extends TestCase {
 		assertTrue(selenium.popupRemoved("atlwdg-blanket"));
 	}
 
-	@After
+
 	public void tearDown()
 	{
-		selenium.closeDriver();
+//		selenium.closeDriver();
 	}
 
 }

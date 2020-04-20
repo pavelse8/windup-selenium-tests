@@ -1,23 +1,29 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.awt.AWTException;
 import java.io.File;
 
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+//import junit.framework.TestCase;
+import org.jboss.windup.web.selenium.pages.CreateProject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+//import org.junit.runners.MethodSorters;
 
 /**
  * Runs the first test from the Web UI Test Script V0.1
  * Initial Analysis Run using new Project test
  * @author elise
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium01Test extends TestCase {
+
+public class Selenium01Test  {
 
 	private CreateProject selenium;
 
+	@BeforeEach
 	public void setUp() {
 		selenium = new CreateProject(false);
 
@@ -28,6 +34,7 @@ public class Selenium01Test extends TestCase {
 
 	}
 
+		@Test
 		public void test01ProjectList() {
 		/*
 		 * Navigate to Project List
@@ -45,6 +52,7 @@ public class Selenium01Test extends TestCase {
 		assertFalse(selenium.nextEnabled());
 		
 		selenium.clickCancel();
+		selenium.clickCancel();
 		
 		assertEquals(selenium.getRhamtBaseUrl() + "rhamt-web/project-list", selenium.checkURL());
 
@@ -58,6 +66,7 @@ public class Selenium01Test extends TestCase {
 	/**
 	 * New Project Project Name validation and upload applications enabled
 	 */
+	@Test
 	public void test02CreateProject() {
 
 		assertEquals(selenium.getRhamtBaseUrl() + "rhamt-web/project-list", selenium.checkURL());
@@ -91,6 +100,7 @@ public class Selenium01Test extends TestCase {
 	}
 
 
+	@Test
 	public void test03AddApps() throws AWTException {
 
 		test02CreateProject();
@@ -126,7 +136,7 @@ public class Selenium01Test extends TestCase {
 				.getName() + " complete");
 	}
 
-
+	@Test
 	public void test04MaintainApps() throws AWTException, InterruptedException {
 
 		test03AddApps();
@@ -158,6 +168,7 @@ public class Selenium01Test extends TestCase {
 				.getName() + " complete");
 	}
 
+	@Test
 	public void test05RunAnalysis() throws AWTException, InterruptedException {
 		test04MaintainApps();
 		
@@ -203,10 +214,9 @@ public class Selenium01Test extends TestCase {
 				.getName() + " complete");
 	}
 
-	@After
+
 	public void tearDown()
 	{
-		selenium.closeDriver();
 
 		System.out.println(new Object() {}
 				.getClass()

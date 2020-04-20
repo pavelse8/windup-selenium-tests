@@ -1,24 +1,33 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.awt.AWTException;
 
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+//import junit.framework.TestCase;
+import org.jboss.windup.web.selenium.pages.CreateProject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+//import org.junit.runners.MethodSorters;
 
 /*
  * Test the Project List and Maintenance
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium07Test extends TestCase {
+
+public class Selenium07Test  {
 
 	private CreateProject selenium;
-	
+
+	@BeforeEach
 	public void setUp() {
 		selenium = new CreateProject();
 	}
 
+	@Test
 	public void test01ProjectListAndEdit() throws AWTException, InterruptedException {
 
 		System.out.println (new Object() {}.getClass().getName() + ":" +
@@ -67,10 +76,10 @@ public class Selenium07Test extends TestCase {
 		
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 	{
-		selenium.closeDriver();
+
 	}
 
 }

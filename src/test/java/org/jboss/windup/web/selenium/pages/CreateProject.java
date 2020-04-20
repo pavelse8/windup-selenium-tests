@@ -1,13 +1,12 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.pages;
 
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.awt.AWTException;
 import java.awt.Robot;
@@ -15,6 +14,9 @@ import java.awt.event.KeyEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selenide.$;
 
 /**
  * this code is intended for a RHAMT web application that does not have any
@@ -25,14 +27,44 @@ import java.util.*;
  */
 public class CreateProject extends CommonProject {
 
-	private WebElement projButton;
-	private WebElement nameInput;
-	private WebElement descInput;
-	private WebElement cancel;
-	private WebElement next;
-	private WebElement chooseFiles;
-	private WebElement fileUpload;
-	private WebElement checkbox;
+	//locators:
+	SelenideElement checkbox;
+	SelenideElement projButton = $(By.cssSelector("button.btn.btn-primary"));
+	SelenideElement newProjButton = $(By.className("blank-slate-pf-main-action"));
+	SelenideElement runButton = $(By.xpath("//button[@class=\"btn btn-primary\" and contains(.,\"Save & Run\")]"));
+	SelenideElement nameInputSelect = $(By.cssSelector("input#idProjectTitle.form-control.ng-pristine.ng-invalid.ng-untouched"));
+	SelenideElement cancel = $(By.cssSelector("button.btn.btn-default"));
+	SelenideElement next = $(By.cssSelector("button.btn.btn-primary"));
+	SelenideElement nameInput =$(By.cssSelector("input#idProjectTitle"));
+	SelenideElement descInput = $(By.cssSelector("textarea#idDescription"));
+	SelenideElement activePanel = $(By.cssSelector("li[class^='active']"));
+	SelenideElement chooseFiles = $(By.cssSelector("label.btn.btn-primary.upload-button"));
+	SelenideElement fileBar = $(By.className("col-md-12"));
+	SelenideElement fileUpload = $(By.id("fileUpload"));
+	SelenideElement clickOut = $(By.className("form-group"));
+	SelenideElement modalBackdrop = $(By.cssSelector(".modal-backdrop"));
+	SelenideElement modalTitle = $(By.cssSelector("h1.modal-title"));
+	SelenideElement modalBody = $(By.cssSelector("div.modal-body"));
+	SelenideElement modalNo = $(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
+	SelenideElement modalDel = $(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
+	SelenideElement itemInList = $(By.cssSelector("li.jstree-node"));
+	SelenideElement packageList = $(By.cssSelector("ul.jstree-container-ul.jstree-children"));
+	SelenideElement progBar = $(By.cssSelector("wu-progress-bar"));
+	SelenideElement selectedApplications =  $(By.cssSelector("ul.chosen-choices"));
+	SelenideElement sort = $(By.cssSelector("wu-sort"));
+	SelenideElement  order = $(By.cssSelector("span.sort-direction.fa.fa-sort-alpha-asc"));
+	SelenideElement projList = $(By.cssSelector("div.list-group"));
+	SelenideElement container = $(By.cssSelector("wu-analysis-context-advanced-options"));
+	SelenideElement addOption = container.$(By.cssSelector("button"));
+	SelenideElement dropdownOption = container.$(By.cssSelector("select.form-control"));
+	SelenideElement containerGroup = container.$(By.className("input-group"));
+	SelenideElement analysisConfig = activePageList.$(By.cssSelector("li:nth-child(3)"));
+	SelenideElement deleteProject = $(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
+	SelenideElement footer = $(By.cssSelector("div.modal-footer"));
+	SelenideElement clearFilter = $(By.cssSelector("a#clear-filters"));
+	SelenideElement search = searchContainer.$(By.cssSelector("input.form-control"));
+	SelenideElement clear = searchContainer.$(By.cssSelector("button.clear"));
+
 
 	public CreateProject()
 	{
@@ -51,10 +83,8 @@ public class CreateProject extends CommonProject {
 	 * http://127.0.0.1:8080/rhamt-web/wizard/create-project
 	 */
 	public void clickNewProjButton() {
-		WebDriverWait wait = new WebDriverWait(driver, 30);
-		wait.until(ExpectedConditions.elementToBeClickable(By.className("blank-slate-pf-main-action")));
-		projButton = driver.findElement(By.className("blank-slate-pf-main-action"));
-		projButton.click();
+		newProjButton.shouldBe(Condition.visible);
+		newProjButton.click();
 	}
 
 	/**
@@ -63,10 +93,7 @@ public class CreateProject extends CommonProject {
 	 * http://127.0.0.1:8080/rhamt-web/wizard/create-project
 	 */
 	public void clickProjButton() {
-		By byCondition = By.cssSelector("button.btn.btn-primary");
-		WebDriverWait wait = new WebDriverWait(driver, 30);
-		wait.until(ExpectedConditions.elementToBeClickable(byCondition));
-		projButton = driver.findElement(byCondition);
+		projButton.waitUntil(visible, 10000);
 		projButton.click();
 	}
 
@@ -76,9 +103,6 @@ public class CreateProject extends CommonProject {
 	 * 
 	 * @return the full URL
 	 */
-	public String checkURL() {
-		return driver.getCurrentUrl();
-	}
 
 	/**
 	 * clicks cancel (should work on every page) PRECONDITION: must call
@@ -96,7 +120,6 @@ public class CreateProject extends CommonProject {
 	 * @return true if it is enabled
 	 */
 	public boolean cancelEnabled() {
-		cancel = driver.findElement(By.cssSelector("button.btn.btn-default"));
 		return cancel.isEnabled();
 	}
 
@@ -105,12 +128,8 @@ public class CreateProject extends CommonProject {
 	 * first should redirect to the next page (can be checked by checkURL())
 	 */
 	public void clickNext() {
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-		wait.until(
-				ExpectedConditions.and(
-						ExpectedConditions.elementToBeClickable(next),
-						ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".modal-backdrop"))));
-		next.click();
+		modalBackdrop.shouldNotBe(visible);
+		next.waitUntil(visible,10000).click();
 	}
 
 	/**
@@ -120,7 +139,6 @@ public class CreateProject extends CommonProject {
 	 * @return true if it is enabled
 	 */
 	public boolean nextEnabled() {
-		next = driver.findElement(By.cssSelector("button.btn.btn-primary"));
 		return next.isEnabled();
 
 	}
@@ -134,14 +152,11 @@ public class CreateProject extends CommonProject {
 	 * @return
 	 */
 	public boolean nameInputSelected() {
-		try {
-			nameInput = driver.findElement(
-					By.cssSelector("input#idProjectTitle.form-control.ng-pristine.ng-invalid.ng-untouched"));
-
-		} catch (NoSuchElementException e) {
+		if (nameInputSelect.isDisplayed()){
+			return true;
+		}else {
 			return false;
 		}
-		return true;
 	}
 
 	/**
@@ -150,8 +165,7 @@ public class CreateProject extends CommonProject {
 	 * @param s
 	 */
 	public void inputProjName(String s) {
-		nameInput = driver.findElement(By.cssSelector("input#idProjectTitle"));
-		nameInput.sendKeys(s);
+		nameInput.setValue(s);
 	}
 
 	/**
@@ -161,7 +175,6 @@ public class CreateProject extends CommonProject {
 		nameInput.clear();
 		nameInput.sendKeys(" ");
 		nameInput.clear();
-		WebElement clickOut = driver.findElement(By.className("form-group"));
 		clickOut.click();
 	}
 
@@ -172,7 +185,6 @@ public class CreateProject extends CommonProject {
 	 *            is the description
 	 */
 	public void inputProjDesc(String s) {
-		descInput = driver.findElement(By.cssSelector("textarea#idDescription"));
 		descInput.sendKeys(s);
 	}
 
@@ -191,16 +203,14 @@ public class CreateProject extends CommonProject {
 	 * @return the name of the current active pannel
 	 */
 	public String activePanel() {
-		WebElement addAppActive = (new WebDriverWait(driver, 5))
-				.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("li[class^='active']")));
-		return addAppActive.getText();
+		activePanel.waitUntil(exist, 100000);
+		return activePanel.getText();
 	}
 
 	/**
 	 * clicks on the "choose files" button, will invoke the "upload files" popup
 	 */
 	public void clickChooseFiles() {
-		chooseFiles = driver.findElement(By.cssSelector("label.btn.btn-primary.upload-button"));
 		chooseFiles.click();
 	}
 
@@ -225,9 +235,7 @@ public class CreateProject extends CommonProject {
 	 * @throws AWTException
 	 */
 	public void robotSelectFile(String s) throws AWTException {
-		Robot r = new Robot();
-		fileUpload = (new WebDriverWait(driver, 5))
-				.until(ExpectedConditions.presenceOfElementLocated(By.id("fileUpload")));
+		fileUpload.shouldBe(Condition.exist);
 		fileUpload.sendKeys(s);
 	}
 
@@ -237,7 +245,6 @@ public class CreateProject extends CommonProject {
 	 * @return true if there are no files shown
 	 */
 	public boolean voidFile() {
-		WebElement fileBar = driver.findElement(By.className("col-md-12"));
 		return fileBar.getText().equals("");
 
 	}
@@ -250,14 +257,11 @@ public class CreateProject extends CommonProject {
 	 * @return the file information, a colon, then the rgb colour
 	 */
 	public String checkFileInfo(int index) {
-		String xpath = "(//*[@class='progress-bar success'])[" + index + "]";
+		SelenideElement file = $(By.xpath("(//*[@class='progress-bar success'])"));
+		SelenideElement fileInfo = $(By.xpath("(//*[@class='file-info'])[" + index + "]"));
 		// have to wait a bit for the file to upload
-		WebElement file = (new WebDriverWait(driver, 100)) 
-				.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpath)));
-
-		xpath = "(//*[@class='file-info'])[" + index + "]";
-		WebElement fileInfo = driver.findElement(By.xpath(xpath));
-
+		file.waitUntil(exist, 35000);
+		fileInfo.waitUntil(Condition.not(have(text("%"))),10000);
 		return fileInfo.getText() + ":" + file.getCssValue("background-color");
 	}
 
@@ -269,12 +273,9 @@ public class CreateProject extends CommonProject {
 	 * @return true if the file is not there
 	 */
 	public boolean checkForEmptyFile(int index) {
-		String xpath = "(//*[@class='progress-bar success'])[" + index + "]";
+		SelenideElement file = $("(//*[@class='progress-bar success'])[" + index + "]");
 		try {
-			WebDriverWait wait = new WebDriverWait(driver, 10);
-			wait.until(
-					ExpectedConditions.invisibilityOfElementLocated(By.xpath(xpath)));
-			WebElement file = driver.findElement(By.xpath(xpath));
+			file.waitUntil(exist, 15000);
 		} catch (NoSuchElementException e) {
 			return true;
 		}
@@ -288,14 +289,9 @@ public class CreateProject extends CommonProject {
 	 *            starts at 1
 	 */
 	public void deleteFile(int index) {
-		String xpath = "(//span[@class='pointer'])[" + index + "]";
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-		wait.until(
-				ExpectedConditions.and(
-						ExpectedConditions.elementToBeClickable(By.xpath(xpath)),
-						ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".modal-backdrop"))));
-		WebElement delete = driver.findElement(By.xpath(xpath));
-
+		SelenideElement delete = $(By.xpath("(//span[@class='pointer'])[" + index + "]"));
+		delete.shouldBe(enabled);
+		modalBackdrop.shouldNotBe(visible);
 		delete.click();
 	}
 
@@ -306,10 +302,9 @@ public class CreateProject extends CommonProject {
 	 * @return
 	 */
 	public String popupInfo() {
-		WebElement modalTitle = (new WebDriverWait(driver, 10)).until(ExpectedConditions.visibilityOfElementLocated(
-				By.cssSelector("h1.modal-title")));
-		WebElement modalBody = (new WebDriverWait(driver, 10)).until(ExpectedConditions.visibilityOfElementLocated(
-				By.cssSelector("div.modal-body")));
+		modalTitle.shouldBe(visible);
+		modalBody.shouldBe(visible);
+
 		return modalTitle.getText() + ";" + modalBody.getText();
 	}
 
@@ -317,7 +312,6 @@ public class CreateProject extends CommonProject {
 	 * this finds the no or cancel button of the popup and clicks it
 	 */
 	public void deletePopup() {
-		WebElement modalNo = driver.findElement(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
 		modalNo.click();
 	}
 
@@ -325,9 +319,7 @@ public class CreateProject extends CommonProject {
 	 * this finds the yes or confirm button of the popup and clicks it
 	 */
 	public void acceptPopup() {
-		WebElement modalYes = (new WebDriverWait(driver, 5)).until(ExpectedConditions.elementToBeClickable(
-			By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger")));
-		modalYes.click();
+		modalDel.click();
 	}
 
 	/**
@@ -339,13 +331,9 @@ public class CreateProject extends CommonProject {
 	 * @return true if the popup is removed
 	 */
 	public boolean popupRemoved(String s) {
-		try {
-
-			WebElement dialog = driver.findElement(By.cssSelector("div#" + s + ".modal.fade.in"));
-		} catch (NoSuchElementException e) {
-			return true;
-		}
-		return false;
+		SelenideElement dialog = $(By.cssSelector("div#" + s + ".modal.fade.in"));
+		if (dialog.isDisplayed()){return false;}
+		else{return true;}
 	}
 
 	/**
@@ -358,13 +346,10 @@ public class CreateProject extends CommonProject {
 	 */
 	public String transformationPath() {
 		for (int i = 1; i < 4; i++) {
-			String xpath = "(//*[@id='migrationPath'])[" + i + "]";
-			WebElement radioButton = (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated(
-					By.xpath(xpath)));
-			
+			SelenideElement radioButton = $(By.xpath("(//*[@id='migrationPath'])[" + i + "]"));
+			radioButton.shouldBe(visible);
 			if (radioButton.isSelected()) {
-				xpath = "(//*[@class='radio-inline control-label'])[" + i + "]";
-				WebElement path = driver.findElement(By.xpath(xpath));
+				SelenideElement path = $(By.xpath("(//*[@class='radio-inline control-label'])[" + i + "]"));
 				return path.getText();
 			}
 		}
@@ -376,8 +361,7 @@ public class CreateProject extends CommonProject {
 	 * @param index starts at 1
 	 */
 	public void chooseTransformationPath(int index) {
-		String xpath = "(//*[@id='migrationPath'])[" + index + "]";
-		WebElement radioButton = driver.findElement(By.xpath(xpath));
+		SelenideElement radioButton = $(By.xpath("(//*[@id='migrationPath'])[" + index + "]"));
 		radioButton.click();
 	}
 
@@ -408,9 +392,7 @@ public class CreateProject extends CommonProject {
 //		{
 //			findPackages();
 //		}
-		WebElement itemInList = (new WebDriverWait(driver, 30)).until(ExpectedConditions.presenceOfElementLocated(
-				By.cssSelector("li.jstree-node")));
-		WebElement packageList = driver.findElement(By.cssSelector("ul.jstree-container-ul.jstree-children"));
+		itemInList.waitUntil(exist, LONGTIMEOUT);
 		return packageList.getText();
 	}
 	
@@ -419,22 +401,20 @@ public class CreateProject extends CommonProject {
 	 * @param index is for either 1 or 2, 1 being the included packages tree hierarchy, and two being excluded packages
 	 * @return a ul of further packages
 	 */
-	public WebElement getMainBranch(int index) {
-		WebElement packageTable = (new WebDriverWait(driver, 10)).until(ExpectedConditions.presenceOfElementLocated(
-				By.cssSelector("wu-js-tree-wrapper.jstree.jstree-"+ index + ".jstree-default")));
-		WebElement firstPackage = packageTable.findElement(By.cssSelector("li:nth-child(1)"));
+	public SelenideElement getMainBranch(int index) {
+		SelenideElement packageTable = $(By.cssSelector("wu-js-tree-wrapper.jstree.jstree-"+ index + ".jstree-default"));
+		packageTable.waitUntil(exist, TIMEOUT);
+		SelenideElement firstPackage = packageTable.$(By.cssSelector("li:nth-child(1)"));
 		
-		WebElement branch = null;
+		SelenideElement branch = $(By.cssSelector("ul.jstree-children"));
 		
-		try {
-			branch = firstPackage.findElement(By.cssSelector("ul.jstree-children"));
-		}
-		catch (NoSuchElementException e) {
-			WebElement firstCarrot = firstPackage.findElement(By.cssSelector("i.jstree-icon.jstree-ocl"));
-			firstCarrot.click();
-			branch = firstPackage.findElement(By.cssSelector("ul.jstree-children"));
-		}	
+		if (branch.isDisplayed())
+		{return branch;}
+		else
+		{SelenideElement firstCarrot = $(By.cssSelector("i.jstree-icon.jstree-ocl"));
+		firstCarrot.click();
 		return branch;
+		}
 	}
 	
 	/**
@@ -444,7 +424,7 @@ public class CreateProject extends CommonProject {
 	 * @return
 	 */
 	public boolean testPackages(int index) {
-		WebElement branch = getMainBranch(index);
+		SelenideElement branch = getMainBranch(index);
 		innerPackages(branch);
 		return packageSelected(branch);
 	}
@@ -457,7 +437,7 @@ public class CreateProject extends CommonProject {
 	 * @return
 	 */
 	public boolean testEmptyPackages(int index) {
-		WebElement branch = getMainBranch(index);
+		SelenideElement branch = getMainBranch(index);
 		checkbox.click();
 		
 		if (index == 1) {
@@ -471,34 +451,33 @@ public class CreateProject extends CommonProject {
 	 * which it then clicks.
 	 * @param ul is the branch of packages to be opened 
 	 */
-	public void innerPackages(WebElement ul) {
-		WebElement innerPackages = null;
-		WebElement carrot;
-		WebElement branch = null;
+	public void innerPackages(SelenideElement ul) {
+		SelenideElement innerPackages = null;
+		SelenideElement carrot;
+		SelenideElement branch = null; //TODO Упростить метод
 		boolean work = false;
 		int previousX = 0;
 		int x = 1;
 		while (true) {
 			try {
 				previousX = x;
-				innerPackages = ul.findElement(By.cssSelector("li:nth-child(" + x + ")"));
+				innerPackages = ul.$(By.cssSelector("li:nth-child(" + x + ")"));
 				x++;
-				carrot = innerPackages.findElement(By.cssSelector("i.jstree-icon.jstree-ocl"));
-				WebDriverWait wait = new WebDriverWait(driver, 10);
-				wait.until(ExpectedConditions.visibilityOfAllElements(carrot));
+				carrot = innerPackages.$(By.cssSelector("i.jstree-icon.jstree-ocl"));
+				carrot.waitUntil(visible,TIMEOUT);
 				carrot.click();
 				
-				branch = innerPackages.findElement(By.cssSelector("ul.jstree-children"));
+				branch = innerPackages.$(By.cssSelector("ul.jstree-children"));
 				work = true;
 			}
-			catch (NoSuchElementException e) {
+			catch (Exception e) {
 				if (work == true) {
 					innerPackages(branch);
 					break;
 				}
 				if (previousX == x) {
-					WebElement a = innerPackages.findElement(By.cssSelector("a"));
-					checkbox = a.findElement(By.cssSelector("i:nth-child(1)"));
+					SelenideElement a = innerPackages.$(By.cssSelector("a"));
+					checkbox = a.$(By.cssSelector("i:nth-child(1)"));
 					checkbox.click();
 					break;
 				}
@@ -511,26 +490,27 @@ public class CreateProject extends CommonProject {
 	 * @param ul is the branch of packages to be looked through
 	 * @return true if there are packages selected
 	 */
-	public boolean packageSelected(WebElement ul) {
-		WebElement innerPackages = null;
-		WebElement branch = null;
+	public boolean packageSelected(SelenideElement ul) {
+		SelenideElement innerPackages = null;
+		SelenideElement branch;
 		int previousX = 0;
 		int x = 1;
 		while (true) {
 			try {
 				previousX = x;
-				innerPackages = ul.findElement(By.cssSelector("li:nth-child(" + x + ")"));
+				innerPackages = ul.$(By.cssSelector("li:nth-child(" + x + ")"));
 				x++;
 				
-				branch = innerPackages.findElement(By.cssSelector("ul.jstree-children"));
-				WebElement a = innerPackages.findElement(By.cssSelector("a"));
-				WebElement checkbox = a.findElement(By.cssSelector("i:nth-child(1)"));
+				branch = innerPackages.$(By.cssSelector("ul.jstree-children"));
+				SelenideElement a = innerPackages.$(By.cssSelector("a"));
+				SelenideElement checkbox = a.$(By.cssSelector("i:nth-child(1)"));
+				checkbox.waitUntil(exist, TIMEOUT);
 				String c = checkbox.getAttribute("class");
 				if (c.equals("jstree-icon jstree-checkbox jstree-undetermined")) {
 					return packageSelected(branch);
 				}
 			}
-			catch (NoSuchElementException e) {
+			catch (Exception e) {
 				if (previousX == x) {
 					return innerPackages.getAttribute("aria-selected").equals("true");
 				}
@@ -542,9 +522,7 @@ public class CreateProject extends CommonProject {
 	 * this clicks on the add options button in the advanced options section of the analysis configuration 
 	 */
 	public void addOptions() {
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		
-		WebElement addOption = container.findElement(By.cssSelector("button"));
+		addOption.waitUntil(enabled, TIMEOUT);
 		addOption.click();
 	}
 	
@@ -555,20 +533,15 @@ public class CreateProject extends CommonProject {
 	 * @param optionName is a string of the options
 	 */
 	public void optionsDropdown(String optionName) {
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		WebElement dropdown = container.findElement(By.cssSelector("select.form-control"));
-		dropdown.click();
 		int x = 1;
 		while (true) {
-			try {
-				WebElement option = dropdown.findElement(By.cssSelector("option:nth-child("+ x + ")"));
-				x++;
+			SelenideElement option = dropdownOption.$(By.cssSelector("option:nth-child("+ x + ")"));
+			x++;
+			if(option.exists()){
 				if (option.getAttribute("value").equals(optionName)) {
 					option.click();
 				}
-			} catch (NoSuchElementException e) {
-				break;
-			}
+			} else {break;}
 		}
 	}
 	
@@ -578,9 +551,8 @@ public class CreateProject extends CommonProject {
 	 * @param num is the index of the options (starts at 1)
 	 */
 	public void addOption(int num) {
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		WebElement buttons = container.findElement(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(3)"));
-		WebElement cancel = buttons.findElement(By.cssSelector("button:nth-child(1)"));
+		SelenideElement buttons = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(3)"));
+		SelenideElement cancel = buttons.$(By.cssSelector("button:nth-child(1)"));
 		cancel.click();
 	}
 	
@@ -591,9 +563,8 @@ public class CreateProject extends CommonProject {
 	 */
 	public void cancelOption(int num) {
 
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		WebElement buttons = container.findElement(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(3)"));
-		WebElement add = buttons.findElement(By.cssSelector("button:nth-child(2)"));
+		SelenideElement buttons = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(3)"));
+		SelenideElement add = buttons.$(By.cssSelector("button:nth-child(2)"));
 		add.click();
 	}
 	
@@ -602,11 +573,9 @@ public class CreateProject extends CommonProject {
 	 * @param num is the index of the options (starts at 1)
 	 */
 	public void toggleValue(int num) {
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		WebElement value = container.findElement(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(2)"));
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-		wait.until(ExpectedConditions.visibilityOfAllElements(value));
-		WebElement checkbox = value.findElement(By.cssSelector("input"));
+		SelenideElement value = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(2)"));
+		value.waitUntil(visible, TIMEOUT);
+		SelenideElement checkbox = value.$(By.cssSelector("input"));
 		checkbox.click();
 	}
 	
@@ -617,10 +586,9 @@ public class CreateProject extends CommonProject {
 	 * @return true if the given options value is true, false otherwise
 	 */
 	public boolean value(int num) {
-		WebElement container = driver.findElement(By.cssSelector("wu-analysis-context-advanced-options"));
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-		wait.until(ExpectedConditions.invisibilityOf(container.findElement(By.className("input-group"))));
-		WebElement value = container.findElement(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(2)"));
+
+		containerGroup.waitUntil(Condition.not(visible), TIMEOUT);
+		SelenideElement value = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(2)"));
 		if (value.getText().equals("true")) {
 			return true;
 		}
@@ -634,10 +602,9 @@ public class CreateProject extends CommonProject {
 	 */
 	public void clickCollapsed(String name) {
 		for (int i = 1; i < 4; i++) {
-			String xpath = "(//*[@class='fields-section-header-pf'])[" + i + "]";
-			WebElement collapsedDialogues = driver.findElement(By.xpath(xpath));
+			SelenideElement collapsedDialogues = $(By.xpath("(//*[@class='fields-section-header-pf'])[" + i + "]"));
 			if (name.equals(collapsedDialogues.getText())) {
-				WebElement link = collapsedDialogues.findElement(By.cssSelector("span"));
+				SelenideElement link = collapsedDialogues.$(By.cssSelector("span"));
 				link.click();
 			}
 		}
@@ -650,16 +617,11 @@ public class CreateProject extends CommonProject {
 	 */
 	public boolean isCollapsed(String name) {
 		for (int i = 1; i < 4; i++) {
-			String xpath = "(//*[@class='fields-section-header-pf'])[" + i + "]";
-			WebElement collapsedDialogues = driver.findElement(By.xpath(xpath));
+			SelenideElement collapsedDialogues = $(By.xpath("(//*[@class='fields-section-header-pf'])[" + i + "]"));
 			if (name.equals(collapsedDialogues.getText())) {
-				WebElement link = collapsedDialogues.findElement(By.cssSelector("span"));
-				try {
-					WebElement collapse = collapsedDialogues.findElement(By.cssSelector("span[class$='fa-angle-right']"));
-					return true;
-				} catch (NoSuchElementException e) {
-					return false;
-				}
+				SelenideElement collapse = collapsedDialogues.$(By.cssSelector("span[class$='fa-angle-right']"));
+				if(collapse.exists()){return true;}
+				else{return false;}
 			}
 		}
 		return false;
@@ -678,16 +640,13 @@ public class CreateProject extends CommonProject {
 		boolean b = false;
 		String[] collapsedList = { "Exclude packages", "Use custom rules", "Advanced options" };
 		for (int i = 1; i < 4; i++) {
-			String xpath = "(//*[@class='fields-section-header-pf'])[" + i + "]";
-			WebElement collapsedDialogues = driver.findElement(By.xpath(xpath));
-			try {
-				WebElement collapse = collapsedDialogues.findElement(By.cssSelector("span[class$='fa-angle-right']"));
+			SelenideElement collapsedDialogues = $(By.xpath("(//*[@class='fields-section-header-pf'])[" + i + "]"));
+			SelenideElement collapse = $(By.cssSelector("span[class$='fa-angle-right']"));
+			if(collapse.isDisplayed()) {
 				if (collapsedList[i - 1].equals(collapsedDialogues.getText())) {
 					b = true;
 				}
-			} catch (NoSuchElementException e) {
-				return false;
-			}
+			} else  {return false;}
 		}
 		return b;
 	}
@@ -697,7 +656,6 @@ public class CreateProject extends CommonProject {
 	 * and redirect the user to the reports/analysis page
 	 */
 	public void saveAndRun() {
-		WebElement runButton = driver.findElement(By.cssSelector("button.btn.btn-primary.btn-save-run"));
 		runButton.click();
 	}
 	
@@ -711,17 +669,14 @@ public class CreateProject extends CommonProject {
 	 * page because it gives about 30 seconds for the progress bar to load. It looks
 	 * for the div that holds the changing information for the progress bar If the 
 	 * method has found the div, then true is returned.
-	 * 
-	 * @param x
-	 *            is the number of times to run the method if it fails (must start
-	 *            at a number greater than 0)
+	 *
 	 * @return true if the progress bar div is found
 	 * @throws InterruptedException
 	 */
 	public boolean checkProgressBar() throws InterruptedException {
-		WebElement progBar = (new WebDriverWait(driver, 120)).until(ExpectedConditions.presenceOfElementLocated(
-				By.cssSelector("wu-progress-bar")));
-		return true;
+		progBar.waitUntil(visible,30000);
+		if(progBar.isDisplayed()){return true;}
+		else {return false;}
 	}
 
 	/**
@@ -730,8 +685,6 @@ public class CreateProject extends CommonProject {
 	 * Should redirect to an Analysis Configuration page
 	 */
 	public void clickAnalysisConfiguration() {
-		WebElement list = driver.findElement(By.cssSelector("ul.list-group"));
-		WebElement analysisConfig = list.findElement(By.cssSelector("li:nth-child(3)"));
 		analysisConfig.click();
 	}
 
@@ -742,12 +695,9 @@ public class CreateProject extends CommonProject {
 	 * @param index starts at 1
 	 */
 	public void deleteSelectedApplication(int index) {
-
-		String xpath = "(//*[@class='search-choice'])[" + index + "]";
-		WebElement application = driver.findElement(By.xpath(xpath));
-		WebElement delete = application.findElement(By.className("search-choice-close"));
+		SelenideElement application = $(By.xpath("(//*[@class='search-choice'])[" + index + "]"));
+		SelenideElement delete = application.$(By.className("search-choice-close"));
 		delete.click();
-
 	}
 
 	/**
@@ -756,7 +706,7 @@ public class CreateProject extends CommonProject {
 	 * @return a string version of the applications. 
 	 */
 	public String printSelectedApplications() {
-		WebElement selectedApplications = driver.findElement(By.cssSelector("ul.chosen-choices"));
+		selectedApplications.shouldBe(exist);
 		return selectedApplications.getText();
 	}
 	
@@ -768,20 +718,18 @@ public class CreateProject extends CommonProject {
 	 * @return true if all results have the "show reports" and "delete" actions
 	 */
 	public boolean analysisResultsComplete(int numOfAnalysis) {
-		String xpath = "";
 		for (int x = 1; x <= numOfAnalysis; x++) {
-			xpath = "(//*[@class='success'])[" + numOfAnalysis + "]";
+			SelenideElement result = $(By.xpath("(//*[@class='success'])[" + numOfAnalysis + "]"));
 			try {
-                WebElement result = (new WebDriverWait(driver, 360)).until(ExpectedConditions.presenceOfElementLocated(
-                        By.xpath(xpath)));
+                result.waitUntil(exist, LONGTIMEOUT);
                 try {
-                        xpath = "(//*[@class='pointer link'])[1]";
-                        WebElement report = result.findElement(By.xpath(xpath));
-                        xpath = "(//*[@class='pointer link'])[2]";
-                        WebElement delete = result.findElement(By.xpath(xpath));
+                        SelenideElement report = $(By.xpath("(//*[@class='pointer link'])[1]"));
+                        report.waitUntil(exist, TIMEOUT);
+                        SelenideElement delete = $(By.xpath("(//*[@class='pointer link'])[2]"));
+                        delete.waitUntil(exist, TIMEOUT);
                         return true;
                     }
-                catch (NoSuchElementException e)
+                catch (Exception e)
                     {
                         return false;
                     }
@@ -795,21 +743,12 @@ public class CreateProject extends CommonProject {
                             new Object() {}
                                     .getClass()
                                     .getEnclosingMethod()
-                                    .getName() + " searching for xpath " + xpath);
+                                    .getName());
                     return false;
                 }
 
 		}
 		return false;
-	}
-	
-	/**
-	 * this clicks on the projects icon on the top left hand corner of the page.
-	 * will redirect to the projects list pages
-	 */
-	public void clickProjectsIcon() {
-		WebElement projectIcon = driver.findElement(By.className("home"));
-		projectIcon.click();
 	}
 
 	/**
@@ -820,29 +759,19 @@ public class CreateProject extends CommonProject {
 	public boolean navigateProject(String projName) {
 		int x = 1;
 		while (true) {
-			try {
-				WebElement proj = driver.findElement(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
-				WebElement title = proj.findElement(By.cssSelector("div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
+			SelenideElement proj = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
+			SelenideElement title = proj.$(By.cssSelector("div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
+
+			if(title.exists()){
 				if (title.getText().equals(projName)) {
 					title.click();
 					return true;
 				}
 				x++;
 			}
-			catch (NoSuchElementException e) {
-				break;
-			}
+			else {break;}
 		}
 		return false;
-	}
-	
-	/**
-	 * this will collect the information from the project dropdown
-	 * @return "Project" a new line, and the project name
-	 */
-	public String dropDownInfo() {
-		WebElement dropDown = driver.findElement(By.className("dropdown-toggle"));
-		return dropDown.getText();
 	}
 
 	/**
@@ -851,40 +780,32 @@ public class CreateProject extends CommonProject {
 	 * popup dialogue box.
 	 */
 	public boolean deleteProject(String projName) {
-		WebElement project = null;
+		SelenideElement project = null;
 		boolean working = false;
 		int x = 1;
 		while (true) {
-			try {
-				String xpath = "(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]";
-				project = driver.findElement(By.xpath(xpath));
-
-				WebElement title = project.findElement(By.cssSelector("h2.project-title"));
+			project = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
+			SelenideElement title = project.$(By.cssSelector("h2.project-title"));
+			if(title.exists()){
 				if (title.getText().equals(projName)) {
-					WebElement trash = project.findElement(By.cssSelector("a.action-button.action-delete-project"));
-					JavascriptExecutor jse2 = (JavascriptExecutor)driver;
+					SelenideElement trash = project.$(By.cssSelector("a.action-button.action-delete-project"));
+					JavascriptExecutor jse2 = (JavascriptExecutor)WebDriverRunner.getWebDriver();
 					jse2.executeScript("arguments[0].click()", trash);
 					working = true;
 					break;
 				}
 				x++;
 			}
-			catch (NoSuchElementException e) {
-				break;
-			}
+			else {break;}
 		}
-		if (working == true) {
-			WebElement cancel = driver.findElement(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
-			WebElement delete = driver.findElement(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
-			WebDriverWait  wait = new WebDriverWait(driver, 60);
-			wait.until(ExpectedConditions.and(
-					ExpectedConditions.elementToBeClickable(cancel),
-					ExpectedConditions.not(ExpectedConditions.elementToBeClickable(delete))
-			));
-			if (cancel.isEnabled() && !delete.isEnabled()) {
-				WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input#resource-to-delete")));
+		if (working) {
+			modalNo.waitUntil(enabled,TIMEOUT);
+			deleteProject.waitUntil(enabled,TIMEOUT);
+			if (modalNo.isEnabled() && !deleteProject.isEnabled()) {
+				SelenideElement input = $(By.cssSelector("input#resource-to-delete"));
+				input.waitUntil(visible, TIMEOUT);
 				input.sendKeys(projName);
-				return delete.isEnabled();
+				return deleteProject.isEnabled();
 			}
 		}
 		return false;
@@ -896,9 +817,7 @@ public class CreateProject extends CommonProject {
 	 * @return true if the dialog has been removed
 	 */
 	public boolean cancelDeleteProject() {
-		WebElement footer = driver.findElement(By.cssSelector("div.modal-footer"));
-		WebElement cancel = footer.findElement(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
-		cancel.click();
+		modalNo.click();
 		return popupRemoved("deleteProjectDialog");
 	}
 	
@@ -908,8 +827,7 @@ public class CreateProject extends CommonProject {
 	 * @return true if the dialog has been removed
 	 */
 	public boolean clickDeleteProject() {
-		WebElement delete = driver.findElement(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
-		delete.click();
+		deleteProject.click();
 		return popupRemoved("deleteProjectDialog");
 	}
 	
@@ -1058,19 +976,17 @@ public class CreateProject extends CommonProject {
 	 * @return the arraylist of application objects
 	 */
 	public ArrayList<Project> listProjects() {
-		WebElement projList = (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated(
-				By.cssSelector("div.list-group")));
+		projList.waitUntil(exist, TIMEOUT);
 		ArrayList<Project> list = new ArrayList<>();
 		
 		int x = 1;
 		while (true) {
 			try {
-				WebElement proj = projList.findElement(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
-				
-				WebElement desc = proj.findElement(By.cssSelector("div.list-group-item-heading"));
-				WebElement name = desc.findElement(By.cssSelector("a"));
-				WebElement application = desc.findElement(By.cssSelector("small.count-applications"));
-				WebElement lastU = desc.findElement(By.cssSelector("small.last-updated"));
+				SelenideElement proj = projList.$(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
+				SelenideElement desc = proj.$(By.cssSelector("div.list-group-item-heading"));
+				SelenideElement name = desc.$(By.cssSelector("a"));
+				SelenideElement application = desc.$(By.cssSelector("small.count-applications"));
+				SelenideElement lastU = desc.$(By.cssSelector("small.last-updated"));
 				
 				String app = application.getText();
 				app = app.substring(0, app.indexOf("application") - 1);
@@ -1084,7 +1000,7 @@ public class CreateProject extends CommonProject {
 				list.add(p);
 				x++;
 			} 
-			catch (NoSuchElementException e) {
+			catch (Exception e) {
 				return list;
 			}
 		}
@@ -1185,31 +1101,17 @@ public class CreateProject extends CommonProject {
 	 * @return true if these params are properly found.
 	 */
 	public boolean sortProjectList(String sortOrder, boolean ascending) {
-		WebElement sorts = driver.findElement(By.cssSelector("wu-sort"));
-		dropDown(sorts, sortOrder);
-		
+		dropDown(sort, sortOrder);
 		try {
-			WebElement order = driver.findElement(By.cssSelector("span.sort-direction.fa.fa-sort-alpha-asc"));
-			if (ascending == false) {
-				order.click();
-			}
+			order.shouldBe(exist);
+			order.click();
 			return true;
-		} catch (NoSuchElementException e) {
-			try {
-				WebElement order = driver.findElement(By.cssSelector("span.sort-direction.fa.fa-sort-alpha-desc"));
-				if (ascending == true) {
-					order.click();
-					return true;
-				}
-				
-			} catch (NoSuchElementException ex) {
-				System.out.println (new Object() {}.getClass().getName() + ":" +
-						new Object() {}.getClass().getEnclosingMethod().getName());
-				System.out.println("did not find descending button");
-				return false;
-			}
 		}
-		return false;
+		catch (Exception e) {
+			return false;
+			}
+
+
 	}
 
 
@@ -1218,8 +1120,7 @@ public class CreateProject extends CommonProject {
 	 * this will clear all filters added on the application list page
 	 */
 	public void clearFilters() {
-		WebElement clear = driver.findElement(By.cssSelector("a#clear-filters"));
-		clear.click();
+		clearFilter.click();
 	}
 
 	/**
@@ -1228,19 +1129,21 @@ public class CreateProject extends CommonProject {
 	 * @param f is the web element holding the dropdown
 	 * @param name is the name to be selected in the dropdown
 	 */
-	private void dropDown(WebElement f, String name) {
-		WebElement dropDown = f.findElement(By.cssSelector("button.btn.btn-default.dropdown-toggle"));
+	private void dropDown(SelenideElement f, String name) {
+		SelenideElement dropDown = f.$(By.cssSelector("button.btn.btn-default.dropdown-toggle"));
 		dropDown.click();
-		WebElement menu = f.findElement(By.className("dropdown-menu"));
+		SelenideElement menu = f.$(By.className("dropdown-menu"));
 		int x = 1;
 		while (true) {
 			try {
-				WebElement option = menu.findElement(By.cssSelector("li:nth-child(" + x + ")"));
-				if (option.getText().equals(name)) {
+				SelenideElement option = menu.$(By.cssSelector("li:nth-child(" + x + ")"));
+				if (option.exists()){if (option.getText().equals(name)) {
 					option.click();
 				}
-				x++;
-			} catch (NoSuchElementException e) {
+					x++;}
+				else {break;}
+
+			} catch (Exception e) {
 				break;
 			}
 		}
@@ -1265,25 +1168,22 @@ public class CreateProject extends CommonProject {
 	 * @return true if the name and description input boxes are present and enabled.
 	 */
 	public boolean editProject(int index, String s) {
-		String xpath = "(//*[@class='list-group-item  project-info  tile-click'])[" + index + "]";
-		WebElement project = driver.findElement(By.xpath(xpath));
-		WebElement edit = project.findElement(By.cssSelector("a.action-button.action-edit-project"));
+		SelenideElement project = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + index + "]"));
+		SelenideElement edit = project.$(By.cssSelector("a.action-button.action-edit-project"));
 		edit.click();
-		WebElement name = null;
-		WebElement description = null;
 		try {
-			WebDriverWait wait = new WebDriverWait(driver, 30);
-			wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input#idProjectTitle")));
-			name = driver.findElement(By.cssSelector("input#idProjectTitle"));
-			name.clear();
-			name.sendKeys(s);
-			description = driver.findElement(By.cssSelector("textarea#idDescription"));
-		} 
-		catch (NoSuchElementException e) {
+			nameInput.waitUntil(exist, TIMEOUT);
+			nameInput.clear();
+			nameInput.sendKeys(s);
+			if (!descInput.exists()) {
+				return false;
+			}
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
-		return name.isEnabled() && description.isEnabled();
+		return nameInput.isEnabled() && descInput.isEnabled();
 	}
 
 	/**
@@ -1291,8 +1191,7 @@ public class CreateProject extends CommonProject {
 	 * button, redirecting to the project list page and showing the new changed project name/description
 	 */
 	public void updateProject() {
-		WebElement updateProject = driver.findElement(By.cssSelector("button.btn.btn-primary"));
-		updateProject.click();
+		next.click();
 	}
 	
 	/**
@@ -1303,10 +1202,8 @@ public class CreateProject extends CommonProject {
 	 * @return true if the name has been changed
 	 */
 	public boolean checkUpdateProject(int index, String projName) {
-		String xpath = "(//*[@class='list-group-item  project-info  tile-click'])[" + index + "]";
-		WebElement project = driver.findElement(By.xpath(xpath));
-		
-		WebElement title = project.findElement(By.cssSelector("h2.project-title"));
+		SelenideElement project = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + index + "]"));
+		SelenideElement title = project.$(By.cssSelector("h2.project-title"));
 		return title.getText().equals(projName);
 	}
 	
@@ -1316,9 +1213,6 @@ public class CreateProject extends CommonProject {
 	 * @param s
 	 */
 	public void projectSearch(String s) {
-		WebElement searchContainer = driver.findElement(By.cssSelector("wu-search"));
-		
-		WebElement search = searchContainer.findElement(By.cssSelector("input.form-control"));
 		search.sendKeys(s);
 	}
 	
@@ -1326,8 +1220,6 @@ public class CreateProject extends CommonProject {
 	 * if the project search has been changed 
 	 */
 	public void clearProjectSearch() {
-		WebElement searchContainer = driver.findElement(By.cssSelector("wu-search"));
-		WebElement clear = searchContainer.findElement(By.cssSelector("button.clear"));
 		clear.click();
 	}
 }

@@ -1,19 +1,20 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.pages;
 
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 /**
  * this code is intended for a RHAMT web application that does not have any
@@ -24,37 +25,31 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class EditProject extends CommonProject {
+    //Сonstants:
+    long TIMEOUT= 20000;
+
+
+    //Locators:
+    SelenideElement projLoad = $(By.cssSelector(".activated-item"));
+    SelenideElement dropDownMenu = $(By.cssSelector("ul.dropdown-menu"));
+    SelenideElement activePageActive = activePageList.$(By.xpath("//*[@class='list-group-item active']"));
+    SelenideElement tableBody = $(By.cssSelector("tbody"));
+    SelenideElement cancelSearchButton = $(By.cssSelector("button.clear"));
+    SelenideElement modalTitle = $(By.cssSelector("h1.modal-title"));
+    SelenideElement modalBody = $(By.cssSelector("div.modal-body"));
+    SelenideElement modalDel = $(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
+    SelenideElement modalYes = $(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
+    SelenideElement table = $(By.cssSelector("table"));
+    SelenideElement header = table.$(By.cssSelector("thead > tr:nth-child(1)"));
+    SelenideElement delAplications = $(By.cssSelector("span.fa-lg.action-item"));
+    SelenideElement delResult = $(By.cssSelector("td:nth-child(5) > a:nth-child(3)"));
+    SelenideElement nameAnalis = $(By.cssSelector("td:nth-child(1)"));
+    SelenideElement input = searchContainer.$(By.cssSelector("input"));
+
 
     public EditProject()
     {
         waitForProjectList();
-    }
-
-    /**
-     * returns the current URL of the page May have to wait a few seconds for it to
-     * properly load
-     *
-     * @return the full URL
-     */
-    public String checkURL()
-    {
-        return driver.getCurrentUrl();
-    }
-
-    /**
-     * navigates the driver to a different tab
-     * @param index starts at 0 (whichever tab to navigate to)
-     * @throws InterruptedException
-     */
-    public void navigateTo(int index) throws InterruptedException {
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        ArrayList tabs = new ArrayList(driver.getWindowHandles());
-        if (tabs.size() <= index) {
-            Thread.sleep(1000);
-            navigateTo(index);
-        }
-        driver.switchTo().window((String)tabs.get(index));
-        driver.switchTo().defaultContent();
     }
 
     /**
@@ -67,11 +62,8 @@ public class EditProject extends CommonProject {
         int x = 1;
         while (true) {
             try {
-                WebElement proj = driver
-                        .findElement(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
+                SelenideElement title = $(By.xpath("(//*[@class='list-group-item-heading']/a/h2)[" + x + "]"));
 
-                WebElement title = proj.findElement(By.cssSelector(
-                        "div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
                 if (title.getText().equals(projName)) {
                     title.click();
                     return true;
@@ -92,10 +84,7 @@ public class EditProject extends CommonProject {
      * @return the name of the page activated
      */
     public String activePage() {
-        WebElement list = driver.findElement(By.cssSelector("ul.list-group"));
-        WebElement active = list.findElement(By.xpath("//*[@class='list-group-item active']"));
-
-        return active.getText();
+        return activePageActive.getText();
     }
 
 
@@ -119,34 +108,24 @@ public class EditProject extends CommonProject {
 
     private void clickMenuItem(int item)
     {
-        WebDriverWait wait = new WebDriverWait(driver,10);
-        String cssSelector = "ul.list-group li:nth-child(" + item + ")";
-        try {
-            WebElement applications = wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.cssSelector(cssSelector))));
-            applications.click();
-        } catch (StaleElementReferenceException sere) {
-            WebElement applications = wait.until(ExpectedConditions.elementToBeClickable(driver.findElement(By.cssSelector(cssSelector))));
-            applications.click();
-        }
+        SelenideElement applications = $("ul.list-group li:nth-child(" + item + ")");
+
+        applications.waitUntil(Condition.enabled, TIMEOUT);
+        applications.click();
+
     }
 
     /**
      * this clicks on the projects icon on the top left hand corner of the page.
      * will redirect to the projects list pages
      */
-    public void clickProjectsIcon() {
-        WebElement projectIcon = driver.findElement(By.className("home"));
-        projectIcon.click();
-    }
+
 
     /**
      * this will collect the information from the project dropdown
      * @return "Project" a new line, and the project name
      */
-    public String dropDownInfo() {
-        WebElement dropDown = driver.findElement(By.className("dropdown-toggle"));
-        return dropDown.getText();
-    }
+
 
     /**
      * this will click on the projects dropdown and select a project
@@ -154,14 +133,13 @@ public class EditProject extends CommonProject {
      * @param projName is the exact name of the project
      */
     public void clickProjDropDown(String projName) {
-        WebElement dropDown = driver.findElement(By.className("dropdown-toggle"));
+        dropDown.waitUntil(Condition.exist, TIMEOUT);
         dropDown.click();
-        WebElement menu = driver.findElement(By.cssSelector("ul.dropdown-menu"));
+        dropDownMenu.waitUntil(Condition.exist, TIMEOUT);
         int x = 1;
         while (true) {
             try {
-                WebElement proj = menu.findElement(By.cssSelector("li:nth-child(" + x + ")"));
-
+                SelenideElement proj = dropDownMenu.$(By.cssSelector("li:nth-child(" + x + ")"));
                 if (proj.getText().equals(projName)) {
                     proj.click();
                     break;
@@ -184,11 +162,10 @@ public class EditProject extends CommonProject {
      * @return the analysis number
      */
     public String analysisName(int index) {
-        String xpath = "(//*[@class='success'])[" + index + "]";
-        WebElement result = (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath(xpath)));
-        WebElement name = result.findElement(By.cssSelector("td:nth-child(1)"));
-        return name.getText();
+        SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
+        result.waitUntil(Condition.exist, TIMEOUT);
+        nameAnalis.waitUntil(Condition.exist, TIMEOUT);
+        return nameAnalis.getText();
     }
 
     /**
@@ -197,10 +174,9 @@ public class EditProject extends CommonProject {
      * @param index starts at 1
      */
     public void deleteAnalysisResults(int index) {
-        String xpath = "(//*[@class='success'])[" + index + "]";
-        WebElement result = (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated((By.xpath(xpath))));
-        WebElement delete = result.findElement(By.cssSelector("td:nth-child(5) > a:nth-child(3)"));
-        delete.click();
+        SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
+        result.waitUntil(Condition.exist, TIMEOUT);
+        delResult.click();
     }
 
     /**
@@ -210,11 +186,9 @@ public class EditProject extends CommonProject {
      * @return
      */
     public String clickAnalysisReport(int index) {
-        String xpath = "(//*[@class='success'])[" + index + "]";
-        WebElement result = driver.findElement(By.xpath(xpath));
-        xpath = "(//*[@class='pointer link'])[2]";
-        WebElement actions = result.findElement(By.cssSelector("td:nth-child(5)"));
-        WebElement report = actions.findElement(By.cssSelector("a.pointer.link"));
+        SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
+        SelenideElement actions = result.$(By.cssSelector("td:nth-child(5)"));
+        SelenideElement report = actions.$(By.cssSelector("a.pointer.link"));
         String url = report.getAttribute("href");
 
         report.click();
@@ -227,16 +201,8 @@ public class EditProject extends CommonProject {
      * @return the number of completed analyses
      */
     public int analysisResultsShown() {
-        int x = 1;
-        while (true) {
-            try {
-                String xpath = "(//*[@class='success'])[" + x + "]";
-                WebElement result = driver.findElement(By.xpath(xpath));
-                x++;
-            } catch (NoSuchElementException e) {
-                return x - 1;
-            }
-        }
+        ElementsCollection results = $$(By.xpath("//*[@class='success']"));
+        return results.size();
     }
 
 
@@ -252,12 +218,13 @@ public class EditProject extends CommonProject {
      * @param sortParam the name of the sort to be clicked
      */
     public void tableHeaderSort(String sortParam) {
-        WebElement table = driver.findElement(By.cssSelector("table"));
-        WebElement header = table.findElement(By.cssSelector("thead > tr:nth-child(1)"));
+        table.waitUntil(Condition.exist, TIMEOUT);
+        header.waitUntil(Condition.exist, TIMEOUT);
+
         int x = 1;
         while (true) {
             try {
-                WebElement sort = header.findElement(By.cssSelector("th:nth-child(" + x + ")"));
+                SelenideElement sort = header.$(By.cssSelector("th:nth-child(" + x + ")"));
                 if (sort.getText().equals(sortParam)) {
                     sort.click();
                 }
@@ -276,12 +243,13 @@ public class EditProject extends CommonProject {
      * @return A string arraylist of the elements of the table
      */
     public ArrayList<String> collectTableCol(int index) {
-        WebElement body = driver.findElement(By.cssSelector("tbody"));
+        tableBody.waitUntil(Condition.exist, TIMEOUT);
+
         ArrayList<String> list = new ArrayList<>();
         int x = 1;
         while (true) {
             try {
-                WebElement name = body.findElement(By.cssSelector("tr:nth-child(" + x + ") > td:nth-child(" + index + ")"));
+                SelenideElement name = tableBody.$(By.cssSelector("tr:nth-child(" + x + ") > td:nth-child(" + index + ")"));
                 list.add(name.getText());
                 x++;
             } catch (NoSuchElementException e) {
@@ -384,7 +352,6 @@ public class EditProject extends CommonProject {
      * everything is done automatically, so if the table sorting works then it will
      * return true
      * @param index starting at 1, it denotes the column where the elements are in the table
-     * @param headerName is the name of the sort parameter (e.g. "Analysis")
      * @return true if the table does sort the strings properly
      */
     public boolean sortString(int index, String sortName){
@@ -494,17 +461,17 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * @return an arraylist of Status objects
      */
     private ArrayList<Status> collectStatus() {
-        WebElement body = driver.findElement(By.cssSelector("tbody"));
+        SelenideElement body = $(By.cssSelector("tbody"));
         ArrayList<Status> list = new ArrayList<>();
         int x = 1;
         while (true) {
             try {
-                WebElement tr = body.findElement(By.cssSelector("tr:nth-child(" + x + ")"));
-                WebElement name = body.findElement(By.cssSelector("tr:nth-child(" + x + ") > td:nth-child(2)"));
+                SelenideElement tr = body.$(By.cssSelector("tr:nth-child(" + x + ")"));
+                SelenideElement name = body.$(By.cssSelector("tr:nth-child(" + x + ") > td:nth-child(2)"));
                 Status s = new Status(tr.getAttribute("class"), name.getText());
                 list.add(s);
                 x++;
-            } catch (NoSuchElementException e) {
+            } catch (Exception e) {
 
                 return list;
             }
@@ -624,16 +591,15 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * @param app is the full name of the application
      */
     public void deleteApplication(String app) {
-        WebElement body = driver.findElement(By.cssSelector("tbody"));
+        tableBody.waitUntil(Condition.exist, TIMEOUT);
 
         int x = 1;
         while (true) {
             try {
-                WebElement application = body.findElement(By.cssSelector("tr:nth-child(" + x + ")"));
-                WebElement name = application.findElement(By.cssSelector("td:nth-child(1"));
+                SelenideElement application = tableBody.$(By.cssSelector("tr:nth-child(" + x + ")"));
+                SelenideElement name = application.$(By.cssSelector("td:nth-child(1"));
                 if (name.getText().equals(app)) {
-                    WebElement delete = application.findElement(By.cssSelector("span.fa-lg.action-item"));
-                    delete.click();
+                    delAplications.click();
                 }
                 x++;
             }
@@ -651,8 +617,6 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * @param searchParam is the string inputed into the search box
      */
     public void search(String searchParam) {
-        WebElement searchBox = driver.findElement(By.cssSelector("wu-search"));
-        WebElement input = searchBox.findElement(By.cssSelector("input"));
         input.sendKeys(searchParam);
     }
 
@@ -661,8 +625,8 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * can only be run if the search() method has been run first
      */
     public void cancelSearch() {
-        WebElement clear = driver.findElement(By.cssSelector("button.clear"));
-        clear.click();
+        cancelSearchButton.waitUntil(Condition.exist, TIMEOUT);
+        cancelSearchButton.click();
     }
 
     /**
@@ -672,10 +636,8 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * @return
      */
     public String popupInfo() {
-        WebElement modalTitle = (new WebDriverWait(driver, 5)).until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("h1.modal-title")));
-        WebElement modalBody = (new WebDriverWait(driver, 5)).until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("div.modal-body")));
+        modalTitle.waitUntil(Condition.visible, TIMEOUT);
+        modalBody.waitUntil(Condition.visible, TIMEOUT);
         return modalTitle.getText() + ";" + modalBody.getText();
     }
 
@@ -683,15 +645,14 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * this finds the no or cancel button of the popup and clicks it
      */
     public void deletePopup() {
-        WebElement modalNo = driver.findElement(By.cssSelector("button.cancel-button.btn.btn-lg.btn-default"));
-        modalNo.click();
+        modalDel.waitUntil(Condition.exist, TIMEOUT);
+        modalDel.click();
     }
 
     /**
      * this finds the yes or confirm button of the popup and clicks it
      */
     public void acceptPopup() {
-        WebElement modalYes = driver.findElement(By.cssSelector("button.confirm-button.btn.btn-lg.btn-danger"));
         modalYes.click();
     }
 
@@ -704,18 +665,13 @@ Analysis 	Status 	Start Date 	Applications 	Actions
      * @return true if the popup is removed
      */
     public boolean popupRemoved(String s) {
-        try {
-            WebElement dialog = (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated(
-                    By.cssSelector("div#" + s + ".modal.fade.in")));
-        } catch (TimeoutException e) {
-            return true;
-        }
-        return false;
+        SelenideElement dialog = $(By.cssSelector("div#" + s + ".modal.fade.in"));
+        if (dialog.isDisplayed()){return false;}else {return true;}
+
     }
 
     public void waitForProjectLoad(String projectName)
     {
-        WebDriverWait wait = new WebDriverWait(driver, 5);
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".activated-item")));
+        projLoad.waitUntil(Condition.exist, TIMEOUT);
     }
 }

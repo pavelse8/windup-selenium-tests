@@ -1,25 +1,34 @@
-package org.jboss.windup.web.selenium;
+package org.jboss.windup.web.selenium.tests;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 
-import junit.framework.TestCase;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+//import junit.framework.TestCase;
+import org.jboss.windup.web.selenium.pages.EditProject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.junit.After;
+//import org.junit.FixMethodOrder;
+//import org.junit.runners.MethodSorters;
 
 /*testing of the web console navigation features using
  * Project Selenium02Test created via the methods within class Selenium02Test
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Selenium03Test extends TestCase {
+
+public class Selenium03Test {
 
 	private EditProject selenium;
 
+	@BeforeEach
 	public void setUp() {
 		selenium = new EditProject();
 	}
 
+	@Test
 	public void test01ProjectList() throws ParseException {
 		assertTrue(selenium.navigateProject("Selenium02Test"));
 		selenium.waitForProjectLoad("Selenium02Test");
@@ -53,6 +62,7 @@ public class Selenium03Test extends TestCase {
 
 	}
 
+	@Test
 	public void test02MaintainApps() throws ParseException {
 		assertTrue(selenium.navigateProject("Selenium02Test"));
 		
@@ -96,6 +106,7 @@ public class Selenium03Test extends TestCase {
 
 	}
 
+	@Test
 	public void test03MaintainAnalysisRuns() throws InterruptedException {
 		assertTrue(selenium.navigateProject("Selenium02Test"));
 		selenium.clickAnalysisConfiguration();
@@ -124,10 +135,13 @@ public class Selenium03Test extends TestCase {
 
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 	{
-		selenium.closeDriver();
+		System.out.println(new Object() {}
+				.getClass()
+				.getEnclosingMethod()
+				.getName() + " complete");
 
 	}
 }
