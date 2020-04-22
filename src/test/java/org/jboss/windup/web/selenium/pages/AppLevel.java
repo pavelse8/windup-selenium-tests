@@ -1,6 +1,7 @@
 package org.jboss.windup.web.selenium.pages;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import org.openqa.selenium.*;
@@ -11,6 +12,7 @@ import java.awt.AWTException;
 import java.util.ArrayList;
 
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 
 public class AppLevel extends CommonProject {
@@ -19,6 +21,11 @@ public class AppLevel extends CommonProject {
 	SelenideElement feedback = $(By.cssSelector("ul.nav.navbar-nav.navbar-right"));
 	SelenideElement appPage = $(By.cssSelector("div.path"));
 	SelenideElement feedbackHeader = $(By.cssSelector("ul.nav:nth-child(2)"));
+	SelenideElement tableBody = $(By.cssSelector("tbody"));
+	SelenideElement path = $(By.cssSelector("div.path.project-specific"));
+	SelenideElement cancel = $(By.cssSelector("a.cancel"));
+	SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
+	SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
 
 
 	public AppLevel()
@@ -110,11 +117,10 @@ public class AppLevel extends CommonProject {
 	 * @param application
 	 */
 	public void clickApplication(String application) {
-		int x = 1;
-		while (true) {
-			SelenideElement app = $(By.xpath("(//*[@class='appInfo pointsShared0'])[" + x + "]"));
+		ElementsCollection apps = $$(By.xpath("//*[@class='appInfo pointsShared0']"));
+		for (int i = 0; i< apps.size(); i++) {
+			SelenideElement app = apps.get(i);
 			SelenideElement link = app.$(By.cssSelector("div.fileName a"));
-			x++;
 			if (link.getText().equals(application)) {
 				link.click();
 				break;
@@ -208,7 +214,7 @@ public class AppLevel extends CommonProject {
 	 * this should redirect to a new page.
 	 */
 	public void clickShowRule() {
-		SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(1)"));
+		SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(1)")); //TODO вынести локаторы
 		SelenideElement body = table.$(By.cssSelector("tbody"));
 		SelenideElement fileExpanded = body.$(By.cssSelector("tr:nth-child(2)"));
 		body = fileExpanded.$(By.cssSelector("tbody"));
@@ -222,7 +228,7 @@ public class AppLevel extends CommonProject {
 	 * @return true if it is displayed
 	 */
 	public boolean showRuleVisible() {
-		SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(1)"));
+		SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(1)")); //TODO вынести локаторы
 		SelenideElement body = table.$(By.cssSelector("tbody"));
 		SelenideElement fileExpanded = body.$(By.xpath("/html/body/div[2]/div[2]/div/table[1]/tbody/tr[2]/td"));
 		return fileExpanded.isDisplayed();
@@ -235,7 +241,7 @@ public class AppLevel extends CommonProject {
 	 * @return true if the tree is collapsed
 	 */
 	public boolean treeCollapsed() {
-		SelenideElement body = $(By.cssSelector("tbody"));
+		SelenideElement body = $(By.cssSelector("tbody")); //TODO вынести локаторы
 		SelenideElement top = body.$(By.cssSelector("tr:nth-child(1)"));
 		SelenideElement tree = top.$(By.cssSelector("div#treeView-Projects-wrap"));
 		if (tree.getAttribute("class").equals("short")) {
@@ -248,7 +254,7 @@ public class AppLevel extends CommonProject {
 	 * this clicks on the show all button
 	 */
 	public void treeShowAll() {
-		SelenideElement showAll = $(By.cssSelector("a.showMore"));
+		SelenideElement showAll = $(By.cssSelector("a.showMore")); //TODO ынести лоакторы
 		showAll.click();
 	}
 	
@@ -256,7 +262,7 @@ public class AppLevel extends CommonProject {
 	 * this clicks on the show less button
 	 */
 	public void treeShowLess() {
-		SelenideElement showLess = $(By.cssSelector("a.showLess"));
+		SelenideElement showLess = $(By.cssSelector("a.showLess")); //TODO ынести лоакторы
 		showLess.click();
 	}
 	
@@ -265,7 +271,7 @@ public class AppLevel extends CommonProject {
 	 * @return true if the overlay is present and the tree is obscured
 	 */
 	public boolean treeIsCollapsed() {
-		SelenideElement fog = $(By.cssSelector("div#overlayFog"));
+		SelenideElement fog = $(By.cssSelector("div#overlayFog")); //TODO ынести лоакторы
 		return fog.isDisplayed();
 	}
 	
@@ -459,13 +465,12 @@ public class AppLevel extends CommonProject {
 		ArrayList<String> list = new ArrayList<>();
 		int x = 1;
 		while (true) {
-			try {
 				SelenideElement tr = table.$(By.cssSelector("tr:nth-child(" + x + ")"));
 				SelenideElement file = tr.$(By.cssSelector("a:nth-child(1) > strong:nth-child(1)"));
+				if (file.isDisplayed()){
 				list.add(file.getText());
 				x++;
-			}
-			catch (NoSuchElementException e) {
+			} else {
 				break;
 			}
 		}
@@ -478,7 +483,7 @@ public class AppLevel extends CommonProject {
 	 */
 	public String firstBean() {
 		SelenideElement body = $(By.cssSelector("tbody"));
-		SelenideElement firstRow = body.$(By.cssSelector("tr:nth-child(2)"));
+		SelenideElement firstRow = body.$(By.cssSelector("tr:nth-child(2)")); //TODO ынести лоакторы
 		SelenideElement implementation = firstRow.$(By.cssSelector("td:nth-child(3) > a"));
 		String file = implementation.getText();
 		implementation.click();
@@ -491,7 +496,7 @@ public class AppLevel extends CommonProject {
 	 */
 	public String clickJPAEntity() {
 		SelenideElement body = $(By.cssSelector("div.container-fluid.theme-showcase"));
-		SelenideElement table = body.$(By.cssSelector("table#jpaEntityTable"));
+		SelenideElement table = body.$(By.cssSelector("table#jpaEntityTable")); //TODO ынести лоакторы
 		SelenideElement first = table.$(By.cssSelector("tr:nth-child(2)"));
 		SelenideElement link = first.$(By.cssSelector("td:nth-child(2) > a:nth-child(1)"));
 		String file = link.getText();
@@ -507,7 +512,7 @@ public class AppLevel extends CommonProject {
 	 * @return
 	 */
 	public boolean sourceReportFile(String file) {
-		SelenideElement r = $(By.cssSelector("div.path.project-specific"));
+		SelenideElement r = $(By.cssSelector("div.path.project-specific")); //TODO ынести лоакторы
 		String result = r.getText();
 
 		int index = file.lastIndexOf(".");
@@ -521,7 +526,7 @@ public class AppLevel extends CommonProject {
 	 * @return the number of rows in the data sources table.
 	 */
 	public int dataSource() {
-		SelenideElement table = $(By.cssSelector("table.table.table-striped.table-bordered"));
+		SelenideElement table = $(By.cssSelector("table.table.table-striped.table-bordered")); //TODO ынести лоакторы
 		int x = 2;
 		while (true) {
 			try {
@@ -538,13 +543,13 @@ public class AppLevel extends CommonProject {
 	 * In some instances, this method can, inside of the table go through the rows, and click on the first link.
 	 */
 	public void clickFirstLink() {
-		SelenideElement table = $(By.cssSelector("tbody"));
+		SelenideElement table = $(By.cssSelector("tbody")); //TODO ынести лоакторы
 		SelenideElement link = table.$(By.cssSelector("tr:nth-child(2) > td:nth-child(1) > a:nth-child(1)"));
 		link.click();
 	}
 
 	public void clickCamelLink() {
-		SelenideElement table = $(By.cssSelector("tbody"));
+		SelenideElement table = $(By.cssSelector("tbody")); //TODO ынести лоакторы
 		SelenideElement link = table.$(By.ByLinkText.linkText("WEB-INF/camel-context.xml"));
 		link.click();
 	}
@@ -554,17 +559,8 @@ public class AppLevel extends CommonProject {
 	 * @return the number of rows
 	 */
 	public int ignoreFile() {
-		SelenideElement table = $(By.cssSelector("tbody"));
-		int x = 2;
-		while (true) {
-			try {
-				SelenideElement row = table.$(By.cssSelector("tr:nth-child(" + x + ")"));
-				x++;
-			}
-			catch (NoSuchElementException e) {
-				return x - 2;
-			}
-		}
+		ElementsCollection rows = tableBody.$$(By.cssSelector("tr:nth-child(n)"));
+		return  rows.size();
 	}
 	
 	/**
@@ -572,7 +568,6 @@ public class AppLevel extends CommonProject {
 	 * @return the path
 	 */
 	public String sourceReportPath() {
-		SelenideElement path = $(By.cssSelector("div.path.project-specific"));
 		return path.getText();
 	}
 
@@ -581,9 +576,7 @@ public class AppLevel extends CommonProject {
 	 * @throws InterruptedException 
 	 */
 	public void closeFeedback() throws InterruptedException {
-		SelenideElement cancel = $(By.cssSelector("a.cancel"));
 		cancel.click();
-
 		navigateTo(1);
 	}
 	
@@ -591,7 +584,6 @@ public class AppLevel extends CommonProject {
 	 * this will have the driver switch to the send feedback frame of the page
 	 */
 	public void moveToFeedback() {
-		SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
 		WebDriverRunner.getWebDriver().switchTo().frame(dialogue);
 	}
 
@@ -600,14 +592,10 @@ public class AppLevel extends CommonProject {
 	 * @param rating is the suffix of the radiobutton's id. can either be "awesome", "good", "meh", "bad", "horrible"
 	 */
 	public void selectFeedbackButton(String rating) {
-		SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
 		for (int x = 1; x < 6; x++) {
-			try {
-				SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
-				
+			SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
+			if(button.isDisplayed()) {
 				button.click();
-
-			} catch (NoSuchElementException e) {
 			}
 		}
 	}
@@ -617,15 +605,13 @@ public class AppLevel extends CommonProject {
 	 * @return the name of the radiobutton
 	 */
 	public String feedbackRadioButton() {
-		SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
 		for (int x = 1; x < 6; x++) {
-			try {
-				SelenideElement button = ratings.$(By.cssSelector("div.jic-radio:nth-child(" + x + ")"));
-				SelenideElement input = button.$(By.cssSelector("input"));
+			SelenideElement button = ratings.$(By.cssSelector("div.jic-radio:nth-child(" + x + ")"));
+			SelenideElement input = button.$(By.cssSelector("input"));
+			if(input.isDisplayed()) {
 				if (input.isSelected()) {
 					return button.getText();
 				}
-			} catch (NoSuchElementException e) {
 			}
 		}
 		return "null";

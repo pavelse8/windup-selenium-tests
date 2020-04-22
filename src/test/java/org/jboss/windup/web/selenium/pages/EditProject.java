@@ -53,33 +53,6 @@ public class EditProject extends CommonProject {
     }
 
     /**
-     * from the project list screen this will navigate to whichever project is given by the name
-     * @param projName the exact string form of the project name
-     * @return true if the project is found
-     */
-    public boolean navigateProject(String projName) {
-        waitForProjectList();
-        int x = 1;
-        while (true) {
-            try {
-                SelenideElement title = $(By.xpath("(//*[@class='list-group-item-heading']/a/h2)[" + x + "]"));
-
-                if (title.getText().equals(projName)) {
-                    title.click();
-                    return true;
-                }
-                x++;
-                continue;
-            } catch (NoSuchElementException e) {
-                break;
-            }
-        }
-        return false;
-    }
-
-
-
-    /**
      * this will return whichever page is activated on the left sidebar
      * @return the name of the page activated
      */
@@ -109,23 +82,10 @@ public class EditProject extends CommonProject {
     private void clickMenuItem(int item)
     {
         SelenideElement applications = $("ul.list-group li:nth-child(" + item + ")");
-
         applications.waitUntil(Condition.enabled, TIMEOUT);
         applications.click();
 
     }
-
-    /**
-     * this clicks on the projects icon on the top left hand corner of the page.
-     * will redirect to the projects list pages
-     */
-
-
-    /**
-     * this will collect the information from the project dropdown
-     * @return "Project" a new line, and the project name
-     */
-
 
     /**
      * this will click on the projects dropdown and select a project
@@ -136,21 +96,8 @@ public class EditProject extends CommonProject {
         dropDown.waitUntil(Condition.exist, TIMEOUT);
         dropDown.click();
         dropDownMenu.waitUntil(Condition.exist, TIMEOUT);
-        int x = 1;
-        while (true) {
-            try {
-                SelenideElement proj = dropDownMenu.$(By.cssSelector("li:nth-child(" + x + ")"));
-                if (proj.getText().equals(projName)) {
-                    proj.click();
-                    break;
-                }
-                x++;
-                continue;
-            }
-            catch (NoSuchElementException e) {
-                break;
-            }
-        }
+        SelenideElement proj = $(By.xpath("//li/a[contains(.,'" + projName + "')]"));
+        proj.click();
     }
 
 
@@ -221,7 +168,7 @@ public class EditProject extends CommonProject {
         table.waitUntil(Condition.exist, TIMEOUT);
         header.waitUntil(Condition.exist, TIMEOUT);
 
-        int x = 1;
+        int x = 1; //TODO Необходимо изменить метод, после того как откроется отчет
         while (true) {
             try {
                 SelenideElement sort = header.$(By.cssSelector("th:nth-child(" + x + ")"));
@@ -272,27 +219,17 @@ public class EditProject extends CommonProject {
      * @throws ParseException
      */
     public boolean sortDate(int index, String headerName) throws ParseException {
-        //collects the dates before the start date
         ArrayList<Date> toSort = collectDate(index);
-        //clicks on the Start Date header
         tableHeaderSort(headerName);
         if (headerName.equals("Date Added")) {
             tableHeaderSort(headerName);
         }
-        //uses private methods to auto sort the date list by ascending
         ArrayList<Date> sort = ascDate(toSort);
-        //collects the post sorted list from the table
         ArrayList<Date> list = collectDate(index);
-
         if (list.equals(sort)) {
-
-            //collects the dates before the start date
             toSort = collectDate(index);
-            //clicks on the Start Date header
             tableHeaderSort(headerName);
-            //uses private methods to auto sort the date list by descending
             sort = descDate(toSort);
-            //collects the post sorted list from the table
             list = collectDate(index);
 
             if (list.equals(sort))

@@ -89,24 +89,15 @@ public abstract class CommonProject {
      */
 
     public boolean navigateProject(String projName) {
-        int x = 1;
-        while (true) {
-            SelenideElement proj = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
-            SelenideElement title = proj.$(By.cssSelector(
-                        "div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
-            if (title.exists()) {
-                if (title.getText().equals(projName)) {
-                    title.click();
-                    return true;
-                }
-                x++;
-                continue;
-            }
-            else {
-                break;
-            }
+        waitForProjectList();
+        SelenideElement title = $(By.xpath("//*[@class='list-group-item-heading' and contains(.,'"+ projName+"')]"));
+        try {
+            title.waitUntil(Condition.exist, TIMEOUT);
+            title.click();
+            return true;
+        } catch (Exception e){
+            return false;
         }
-        return false;
     }
 
     public void navigateTo(int index) throws InterruptedException {

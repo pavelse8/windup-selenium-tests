@@ -965,7 +965,7 @@ public class AnalyzeProject extends CommonProject {
 	 */
 	public void closeFeedback() throws InterruptedException {
 		SelenideElement dialogue =$(By.cssSelector("iframe#atlwdg-frame"));
-		WebDriverRunner.getWebDriver().switchTo().frame(dialogue);
+		WebDriverRunner.getWebDriver().switchTo().frame(dialogue); //TODO вынести локаторы
 
 		SelenideElement cancel = $(By.cssSelector("a.cancel"));
 		cancel.waitUntil(Condition.exist, TIMEOUT);
@@ -978,7 +978,7 @@ public class AnalyzeProject extends CommonProject {
 	 * this will have the driver switch to the send feedback frame of the page
 	 */
 	public void moveToFeedback() {
-		SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
+		SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame")); // TODO вынести локаторы
 		dialogue.waitUntil(Condition.exist, TIMEOUT);
 		WebDriverRunner.getWebDriver().switchTo().frame(dialogue);
 	}
@@ -995,12 +995,9 @@ public class AnalyzeProject extends CommonProject {
 		SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
 		ratings.waitUntil(Condition.exist, TIMEOUT);
 		for (int x = 1; x < 6; x++) {
-			try {
-				SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
+			SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
+			if(button.isDisplayed()) {
 				button.click();
-
-			} catch (NoSuchElementException e) {
-
 			}
 		}
 	}
@@ -1016,11 +1013,9 @@ public class AnalyzeProject extends CommonProject {
 	public boolean checkFeedbackButton(String rating) {
 		SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
 		for (int x = 1; x < 6; x++) {
-			try {
-				SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
+			SelenideElement button = ratings.$(By.cssSelector("input#rating-" + rating));
+			if(button.isDisplayed()) {
 				return button.isSelected();
-			} catch (NoSuchElementException e) {
-
 			}
 		}
 		return false;
@@ -1056,7 +1051,7 @@ public class AnalyzeProject extends CommonProject {
 	 * Ipsum"
 	 */
 	public void populateTextBox() {
-		SelenideElement like = $(By.xpath("(//*[@id='desc-group'])[1]"));
+		SelenideElement like = $(By.xpath("(//*[@id='desc-group'])[1]")); //TODO вынести локаторы
 		SelenideElement likeTextArea = like.$(By.cssSelector("textarea#description-good"));
 		likeTextArea.sendKeys("Lorem Ipsum");
 
@@ -1091,7 +1086,7 @@ public class AnalyzeProject extends CommonProject {
 	 * @param name
 	 */
 	public void feedbackPopulateName(String name) {
-		SelenideElement nameDiv = $(By.cssSelector("div#name-group"));
+		SelenideElement nameDiv = $(By.cssSelector("div#name-group")); //TODO вынести локаторы
 		SelenideElement input = nameDiv.$(By.cssSelector("input#fullname.text"));
 		input.sendKeys(name);
 	}
@@ -1102,7 +1097,7 @@ public class AnalyzeProject extends CommonProject {
 	 * @param email
 	 */
 	public void feedbackPopulateEmail(String email) {
-		SelenideElement emailDiv = $(By.cssSelector("div#email-group"));
+		SelenideElement emailDiv = $(By.cssSelector("div#email-group"));//TODO вынести локаторы
 		SelenideElement input = emailDiv.$(By.cssSelector("input#email.text"));
 		input.sendKeys(email);
 	}
@@ -1111,14 +1106,14 @@ public class AnalyzeProject extends CommonProject {
 	 * this finds the yes or confirm button of the popup and clicks it
 	 */
 	public void submitFeedback() {
-		SelenideElement modalYes = $(By.cssSelector("input.aui-button.aui-button-primary.submit-button"));
+		SelenideElement modalYes = $(By.cssSelector("input.aui-button.aui-button-primary.submit-button")); //TODO вынести локаторы
 		modalYes.waitUntil(Condition.exist, TIMEOUT);
 		modalYes.click();
 	}
 
 	public void waitForTabLoad()
 	{
-		SelenideElement navbra = $(By.cssSelector("ul.nav.navbar-nav li.active"));
+		SelenideElement navbra = $(By.cssSelector("ul.nav.navbar-nav li.active")); //TODO вынести локаторы
 		navbra.waitUntil(Condition.exist, TIMEOUT);
 	}
 }

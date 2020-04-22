@@ -1,6 +1,7 @@
 package org.jboss.windup.web.selenium.pages;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import org.openqa.selenium.By;
@@ -17,6 +18,7 @@ import java.util.*;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 /**
  * this code is intended for a RHAMT web application that does not have any
@@ -345,11 +347,12 @@ public class CreateProject extends CommonProject {
 	 * @return the chosen migration path
 	 */
 	public String transformationPath() {
-		for (int i = 1; i < 4; i++) {
-			SelenideElement radioButton = $(By.xpath("(//*[@id='migrationPath'])[" + i + "]"));
-			radioButton.shouldBe(visible);
+		ElementsCollection radioButtons = $$(By.xpath("//*[@id='migrationPath']"));
+		for (int i = 0; i< radioButtons.size(); i++){
+			SelenideElement radioButton = radioButtons.get(i);
+			radioButton.waitUntil(visible, TIMEOUT);
 			if (radioButton.isSelected()) {
-				SelenideElement path = $(By.xpath("(//*[@class='radio-inline control-label'])[" + i + "]"));
+				SelenideElement path = $(By.xpath("(//*[@class='radio-inline control-label'])[" + (i+1) + "]"));
 				return path.getText();
 			}
 		}
@@ -403,17 +406,16 @@ public class CreateProject extends CommonProject {
 	 */
 	public SelenideElement getMainBranch(int index) {
 		SelenideElement packageTable = $(By.cssSelector("wu-js-tree-wrapper.jstree.jstree-"+ index + ".jstree-default"));
-		packageTable.waitUntil(exist, TIMEOUT);
-		SelenideElement firstPackage = packageTable.$(By.cssSelector("li:nth-child(1)"));
-		
 		SelenideElement branch = $(By.cssSelector("ul.jstree-children"));
-		
-		if (branch.isDisplayed())
-		{return branch;}
-		else
-		{SelenideElement firstCarrot = $(By.cssSelector("i.jstree-icon.jstree-ocl"));
-		firstCarrot.click();
-		return branch;
+
+		packageTable.waitUntil(exist, TIMEOUT);
+		if (branch.isDisplayed()) {
+			return branch;
+		}
+		else {
+			SelenideElement firstCarrot = $(By.cssSelector("i.jstree-icon.jstree-ocl"));
+			firstCarrot.click();
+			return branch;
 		}
 	}
 	
@@ -452,37 +454,24 @@ public class CreateProject extends CommonProject {
 	 * @param ul is the branch of packages to be opened 
 	 */
 	public void innerPackages(SelenideElement ul) {
-		SelenideElement innerPackages = null;
-		SelenideElement carrot;
-		SelenideElement branch = null; //TODO Упростить метод
+		SelenideElement branch;
 		boolean work = false;
-		int previousX = 0;
-		int x = 1;
-		while (true) {
-			try {
-				previousX = x;
-				innerPackages = ul.$(By.cssSelector("li:nth-child(" + x + ")"));
-				x++;
-				carrot = innerPackages.$(By.cssSelector("i.jstree-icon.jstree-ocl"));
-				carrot.waitUntil(visible,TIMEOUT);
-				carrot.click();
-				
-				branch = innerPackages.$(By.cssSelector("ul.jstree-children"));
+
+		ElementsCollection innerPackages = ul.$$(By.cssSelector("li:nth-child(n)"));
+		for (int i = 0; i< innerPackages.size(); i++) {
+			branch = innerPackages.get(i).$(By.cssSelector("ul.jstree-children"));
+			SelenideElement carrot = innerPackages.get(i).$(By.cssSelector("i.jstree-icon.jstree-ocl"));
+			carrot.waitUntil(visible,TIMEOUT);
+			carrot.click();
+			if (branch.isDisplayed()) {
 				work = true;
-			}
-			catch (Exception e) {
-				if (work == true) {
-					innerPackages(branch);
-					break;
-				}
-				if (previousX == x) {
-					SelenideElement a = innerPackages.$(By.cssSelector("a"));
-					checkbox = a.$(By.cssSelector("i:nth-child(1)"));
-					checkbox.click();
-					break;
-				}
-			}
+			} else {
+				innerPackages(branch);
+				break;}
 		}
+		SelenideElement a = innerPackages.get(innerPackages.size()).$(By.cssSelector("a"));
+		checkbox = a.$(By.cssSelector("i:nth-child(1)"));
+		checkbox.click();
 	}
 	
 	/**
@@ -491,31 +480,21 @@ public class CreateProject extends CommonProject {
 	 * @return true if there are packages selected
 	 */
 	public boolean packageSelected(SelenideElement ul) {
-		SelenideElement innerPackages = null;
 		SelenideElement branch;
 		int previousX = 0;
 		int x = 1;
-		while (true) {
-			try {
-				previousX = x;
-				innerPackages = ul.$(By.cssSelector("li:nth-child(" + x + ")"));
-				x++;
-				
-				branch = innerPackages.$(By.cssSelector("ul.jstree-children"));
-				SelenideElement a = innerPackages.$(By.cssSelector("a"));
-				SelenideElement checkbox = a.$(By.cssSelector("i:nth-child(1)"));
-				checkbox.waitUntil(exist, TIMEOUT);
-				String c = checkbox.getAttribute("class");
-				if (c.equals("jstree-icon jstree-checkbox jstree-undetermined")) {
-					return packageSelected(branch);
-				}
-			}
-			catch (Exception e) {
-				if (previousX == x) {
-					return innerPackages.getAttribute("aria-selected").equals("true");
-				}
+		ElementsCollection innerPackages = ul.$$(By.cssSelector("li:nth-child(n)"));
+		for (int i = 0; i< innerPackages.size(); i++) {
+			branch = innerPackages.get(i).$(By.cssSelector("ul.jstree-children"));
+			SelenideElement a = innerPackages.get(i).$(By.cssSelector("a"));
+			SelenideElement checkbox = a.$(By.cssSelector("i:nth-child(1)"));
+			checkbox.waitUntil(exist, TIMEOUT);
+			String c = checkbox.getAttribute("class");
+			if (c.equals("jstree-icon jstree-checkbox jstree-undetermined")) {
+				return packageSelected(branch);
 			}
 		}
+		return innerPackages.get(innerPackages.size()).getAttribute("aria-selected").equals("true");
 	}
 	
 	/**
@@ -533,15 +512,11 @@ public class CreateProject extends CommonProject {
 	 * @param optionName is a string of the options
 	 */
 	public void optionsDropdown(String optionName) {
-		int x = 1;
-		while (true) {
-			SelenideElement option = dropdownOption.$(By.cssSelector("option:nth-child("+ x + ")"));
-			x++;
-			if(option.exists()){
-				if (option.getAttribute("value").equals(optionName)) {
-					option.click();
-				}
-			} else {break;}
+		ElementsCollection options =  dropdownOption.$$(By.cssSelector("option:nth-child(n)"));
+		for (int i = 0; i< options.size(); i++) {
+			if (options.get(i).getAttribute("value").equals(optionName)) {
+				options.get(i).click();
+			}
 		}
 	}
 	
@@ -718,32 +693,22 @@ public class CreateProject extends CommonProject {
 	 * @return true if all results have the "show reports" and "delete" actions
 	 */
 	public boolean analysisResultsComplete(int numOfAnalysis) {
+		SelenideElement report = $(By.xpath("(//*[@class='pointer link'])[1]"));
+		SelenideElement delete = $(By.xpath("(//*[@class='pointer link'])[2]"));
+
 		for (int x = 1; x <= numOfAnalysis; x++) {
 			SelenideElement result = $(By.xpath("(//*[@class='success'])[" + numOfAnalysis + "]"));
 			try {
                 result.waitUntil(exist, LONGTIMEOUT);
-                try {
-                        SelenideElement report = $(By.xpath("(//*[@class='pointer link'])[1]"));
-                        report.waitUntil(exist, TIMEOUT);
-                        SelenideElement delete = $(By.xpath("(//*[@class='pointer link'])[2]"));
-                        delete.waitUntil(exist, TIMEOUT);
+                if (report.exists() && delete.exists()) {
                         return true;
                     }
-                catch (Exception e)
-                    {
+                else {
                         return false;
                     }
                 }
-            catch (TimeoutException e)
+            catch (Exception e)
                 {
-                    System.out.println ("Timeout exception" +
-                            new Object() {}
-                                    .getClass()
-                                    .getName() + ":" +
-                            new Object() {}
-                                    .getClass()
-                                    .getEnclosingMethod()
-                                    .getName());
                     return false;
                 }
 
@@ -751,28 +716,6 @@ public class CreateProject extends CommonProject {
 		return false;
 	}
 
-	/**
-	 * from the project list screen this will navigate to whichever project is given by the name
-	 * @param projName the exact string form of the project name
-	 * @return true if the project is found
-	 */
-	public boolean navigateProject(String projName) {
-		int x = 1;
-		while (true) {
-			SelenideElement proj = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
-			SelenideElement title = proj.$(By.cssSelector("div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
-
-			if(title.exists()){
-				if (title.getText().equals(projName)) {
-					title.click();
-					return true;
-				}
-				x++;
-			}
-			else {break;}
-		}
-		return false;
-	}
 
 	/**
 	 * This method will navigate the user to the project-list page, locate the
@@ -1135,15 +1078,16 @@ public class CreateProject extends CommonProject {
 		SelenideElement menu = f.$(By.className("dropdown-menu"));
 		int x = 1;
 		while (true) {
-			try {
-				SelenideElement option = menu.$(By.cssSelector("li:nth-child(" + x + ")"));
-				if (option.exists()){if (option.getText().equals(name)) {
+			SelenideElement option = menu.$(By.cssSelector("li:nth-child(" + x + ")"));
+			if(option.isDisplayed()) {
+				if (option.exists()) {
+					if (option.getText().equals(name)) {
 					option.click();
 				}
 					x++;}
-				else {break;}
-
-			} catch (Exception e) {
+				else {
+					break;}
+			} else {
 				break;
 			}
 		}
