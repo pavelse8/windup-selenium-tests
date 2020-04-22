@@ -4,6 +4,7 @@ import com.codeborne.selenide.WebDriverRunner;
 import org.jboss.windup.web.selenium.tools.*;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public abstract class CommonProject {
     SelenideElement projectIcon = $(By.className("home"));
     SelenideElement activePageList = $(By.cssSelector("ul.list-group"));
     SelenideElement pageTitle = $(By.cssSelector("div.main"));
+    JavascriptExecutor jse2 = (JavascriptExecutor)WebDriverRunner.getWebDriver();
 
     public CommonProject()
     {

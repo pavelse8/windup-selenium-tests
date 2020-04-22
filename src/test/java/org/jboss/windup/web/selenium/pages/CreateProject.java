@@ -66,6 +66,10 @@ public class CreateProject extends CommonProject {
 	SelenideElement clearFilter = $(By.cssSelector("a#clear-filters"));
 	SelenideElement search = searchContainer.$(By.cssSelector("input.form-control"));
 	SelenideElement clear = searchContainer.$(By.cssSelector("button.clear"));
+	SelenideElement file = $(By.xpath("(//*[@class='progress-bar success'])"));
+	SelenideElement branch = $(By.cssSelector("ul.jstree-children"));
+	SelenideElement report = $(By.xpath("(//*[@class='pointer link'])[1]"));
+	SelenideElement delete = $(By.xpath("(//*[@class='pointer link'])[2]"));
 
 
 	public CreateProject()
@@ -142,7 +146,6 @@ public class CreateProject extends CommonProject {
 	 */
 	public boolean nextEnabled() {
 		return next.isEnabled();
-
 	}
 
 	/**
@@ -187,7 +190,7 @@ public class CreateProject extends CommonProject {
 	 *            is the description
 	 */
 	public void inputProjDesc(String s) {
-		descInput.sendKeys(s);
+		descInput.setValue(s);
 	}
 
 	/**
@@ -195,7 +198,7 @@ public class CreateProject extends CommonProject {
 	 */
 	public void clearProjDesc() {
 		descInput.clear();
-		descInput.sendKeys("");
+		descInput.setValue("");
 	}
 
 	/**
@@ -205,7 +208,7 @@ public class CreateProject extends CommonProject {
 	 * @return the name of the current active pannel
 	 */
 	public String activePanel() {
-		activePanel.waitUntil(exist, 100000);
+		activePanel.waitUntil(exist, TIMEOUT);
 		return activePanel.getText();
 	}
 
@@ -259,11 +262,9 @@ public class CreateProject extends CommonProject {
 	 * @return the file information, a colon, then the rgb colour
 	 */
 	public String checkFileInfo(int index) {
-		SelenideElement file = $(By.xpath("(//*[@class='progress-bar success'])"));
 		SelenideElement fileInfo = $(By.xpath("(//*[@class='file-info'])[" + index + "]"));
-		// have to wait a bit for the file to upload
-		file.waitUntil(exist, 35000);
-		fileInfo.waitUntil(Condition.not(have(text("%"))),10000);
+		file.waitUntil(exist, TIMEOUT);
+		fileInfo.waitUntil(Condition.not(have(text("%"))),TIMEOUT);
 		return fileInfo.getText() + ":" + file.getCssValue("background-color");
 	}
 
@@ -277,8 +278,8 @@ public class CreateProject extends CommonProject {
 	public boolean checkForEmptyFile(int index) {
 		SelenideElement file = $("(//*[@class='progress-bar success'])[" + index + "]");
 		try {
-			file.waitUntil(exist, 15000);
-		} catch (NoSuchElementException e) {
+			file.waitUntil(exist, TIMEOUT);
+		} catch (Exception e) {
 			return true;
 		}
 		return false;
@@ -306,7 +307,6 @@ public class CreateProject extends CommonProject {
 	public String popupInfo() {
 		modalTitle.shouldBe(visible);
 		modalBody.shouldBe(visible);
-
 		return modalTitle.getText() + ";" + modalBody.getText();
 	}
 
@@ -334,8 +334,10 @@ public class CreateProject extends CommonProject {
 	 */
 	public boolean popupRemoved(String s) {
 		SelenideElement dialog = $(By.cssSelector("div#" + s + ".modal.fade.in"));
-		if (dialog.isDisplayed()){return false;}
-		else{return true;}
+		if (dialog.isDisplayed()){
+			return false;
+		} else {
+			return true;}
 	}
 
 	/**
@@ -377,24 +379,6 @@ public class CreateProject extends CommonProject {
 	 * @throws InterruptedException
 	 */
 	public String findPackages() throws InterruptedException {
-//		String xpath = "//*[@class='jstree-container-ul jstree-children']";
-//		WebElement packageList = (new WebDriverWait(driver, 15)).until(ExpectedConditions.presenceOfElementLocated(
-//				By.cssSelector("ul.jstree-container-ul.jstree-children")));
-//		try {
-//			WebElement leaf = packageList.findElement(By.cssSelector("li:nth-child(3)"));
-//			
-//		}
-//		catch (NoSuchElementException e) {
-//			Thread.sleep(1000);
-//			findPackages();
-//		}
-//		/**
-//		 * TODO Fix the issue in a better way
-//		 */
-//		catch (StaleElementReferenceException sere)
-//		{
-//			findPackages();
-//		}
 		itemInList.waitUntil(exist, LONGTIMEOUT);
 		return packageList.getText();
 	}
@@ -406,8 +390,6 @@ public class CreateProject extends CommonProject {
 	 */
 	public SelenideElement getMainBranch(int index) {
 		SelenideElement packageTable = $(By.cssSelector("wu-js-tree-wrapper.jstree.jstree-"+ index + ".jstree-default"));
-		SelenideElement branch = $(By.cssSelector("ul.jstree-children"));
-
 		packageTable.waitUntil(exist, TIMEOUT);
 		if (branch.isDisplayed()) {
 			return branch;
@@ -441,7 +423,6 @@ public class CreateProject extends CommonProject {
 	public boolean testEmptyPackages(int index) {
 		SelenideElement branch = getMainBranch(index);
 		checkbox.click();
-		
 		if (index == 1) {
 			return packageSelected(branch);
 		}
@@ -481,8 +462,6 @@ public class CreateProject extends CommonProject {
 	 */
 	public boolean packageSelected(SelenideElement ul) {
 		SelenideElement branch;
-		int previousX = 0;
-		int x = 1;
 		ElementsCollection innerPackages = ul.$$(By.cssSelector("li:nth-child(n)"));
 		for (int i = 0; i< innerPackages.size(); i++) {
 			branch = innerPackages.get(i).$(By.cssSelector("ul.jstree-children"));
@@ -537,7 +516,6 @@ public class CreateProject extends CommonProject {
 	 * @param num is the index of the options (starts at 1)
 	 */
 	public void cancelOption(int num) {
-
 		SelenideElement buttons = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(3)"));
 		SelenideElement add = buttons.$(By.cssSelector("button:nth-child(2)"));
 		add.click();
@@ -561,7 +539,6 @@ public class CreateProject extends CommonProject {
 	 * @return true if the given options value is true, false otherwise
 	 */
 	public boolean value(int num) {
-
 		containerGroup.waitUntil(Condition.not(visible), TIMEOUT);
 		SelenideElement value = container.$(By.cssSelector("tr:nth-child(" + num + ") > td:nth-child(2)"));
 		if (value.getText().equals("true")) {
@@ -595,8 +572,10 @@ public class CreateProject extends CommonProject {
 			SelenideElement collapsedDialogues = $(By.xpath("(//*[@class='fields-section-header-pf'])[" + i + "]"));
 			if (name.equals(collapsedDialogues.getText())) {
 				SelenideElement collapse = collapsedDialogues.$(By.cssSelector("span[class$='fa-angle-right']"));
-				if(collapse.exists()){return true;}
-				else{return false;}
+				if(collapse.exists()){
+					return true;
+				} else {
+					return false;}
 			}
 		}
 		return false;
@@ -633,11 +612,6 @@ public class CreateProject extends CommonProject {
 	public void saveAndRun() {
 		runButton.click();
 	}
-	
-	/**
-	 * 
-	 */
-
 
 	/**
 	 * This method should be run right after redirecting to the reports/analysis
@@ -649,9 +623,12 @@ public class CreateProject extends CommonProject {
 	 * @throws InterruptedException
 	 */
 	public boolean checkProgressBar() throws InterruptedException {
-		progBar.waitUntil(visible,30000);
-		if(progBar.isDisplayed()){return true;}
-		else {return false;}
+		progBar.waitUntil(visible,TIMEOUT);
+		if(progBar.isDisplayed()){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -693,9 +670,6 @@ public class CreateProject extends CommonProject {
 	 * @return true if all results have the "show reports" and "delete" actions
 	 */
 	public boolean analysisResultsComplete(int numOfAnalysis) {
-		SelenideElement report = $(By.xpath("(//*[@class='pointer link'])[1]"));
-		SelenideElement delete = $(By.xpath("(//*[@class='pointer link'])[2]"));
-
 		for (int x = 1; x <= numOfAnalysis; x++) {
 			SelenideElement result = $(By.xpath("(//*[@class='success'])[" + numOfAnalysis + "]"));
 			try {
@@ -723,24 +697,20 @@ public class CreateProject extends CommonProject {
 	 * popup dialogue box.
 	 */
 	public boolean deleteProject(String projName) {
-		SelenideElement project = null;
+		ElementsCollection project = $$(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])"));
 		boolean working = false;
 		int x = 1;
-		while (true) {
-			project = $(By.xpath("(//*[@class='list-group-item  project-info  tile-click'])[" + x + "]"));
-			SelenideElement title = project.$(By.cssSelector("h2.project-title"));
-			if(title.exists()){
+
+		for (int i = 0; i< project.size(); i++) {
+			SelenideElement title = project.get(i).$(By.cssSelector("h2.project-title"));
 				if (title.getText().equals(projName)) {
-					SelenideElement trash = project.$(By.cssSelector("a.action-button.action-delete-project"));
-					JavascriptExecutor jse2 = (JavascriptExecutor)WebDriverRunner.getWebDriver();
+					SelenideElement trash = project.get(i).$(By.cssSelector("a.action-button.action-delete-project"));
 					jse2.executeScript("arguments[0].click()", trash);
 					working = true;
 					break;
 				}
-				x++;
-			}
-			else {break;}
 		}
+
 		if (working) {
 			modalNo.waitUntil(enabled,TIMEOUT);
 			deleteProject.waitUntil(enabled,TIMEOUT);

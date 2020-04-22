@@ -26,7 +26,11 @@ public class AppLevel extends CommonProject {
 	SelenideElement cancel = $(By.cssSelector("a.cancel"));
 	SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
 	SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
-
+	SelenideElement bodyUnparsableFile = $(By.cssSelector("div.row.unparsableFile"));
+	SelenideElement tableUnparsableFile = bodyUnparsableFile.$(By.cssSelector("tbody"));
+	SelenideElement firstRow = tableBody.$(By.cssSelector("tr:nth-child(2)")); //TODO ынести лоакторы
+	SelenideElement implementation = firstRow.$(By.cssSelector("td:nth-child(3) > a"));
+	SelenideElement tableDataSource = $(By.cssSelector("table.table.table-striped.table-bordered"));
 
 	public AppLevel()
 	{
@@ -241,8 +245,7 @@ public class AppLevel extends CommonProject {
 	 * @return true if the tree is collapsed
 	 */
 	public boolean treeCollapsed() {
-		SelenideElement body = $(By.cssSelector("tbody")); //TODO вынести локаторы
-		SelenideElement top = body.$(By.cssSelector("tr:nth-child(1)"));
+		SelenideElement top = tableBody.$(By.cssSelector("tr:nth-child(1)"));
 		SelenideElement tree = top.$(By.cssSelector("div#treeView-Projects-wrap"));
 		if (tree.getAttribute("class").equals("short")) {
 			return true;
@@ -460,19 +463,12 @@ public class AppLevel extends CommonProject {
 	 * @return an arrayList of file names 
 	 */
 	public ArrayList<String> unparsableFiles() {
-		SelenideElement body = $(By.cssSelector("div.row.unparsableFile"));
-		SelenideElement table = body.$(By.cssSelector("tbody"));
 		ArrayList<String> list = new ArrayList<>();
-		int x = 1;
-		while (true) {
-				SelenideElement tr = table.$(By.cssSelector("tr:nth-child(" + x + ")"));
-				SelenideElement file = tr.$(By.cssSelector("a:nth-child(1) > strong:nth-child(1)"));
-				if (file.isDisplayed()){
-				list.add(file.getText());
-				x++;
-			} else {
-				break;
-			}
+		ElementsCollection tr = tableUnparsableFile.$$(By.cssSelector("tr:nth-child(n)"));
+
+		for (int i = 0; i< tr.size(); i++) {
+			SelenideElement file = tr.get(i).$(By.cssSelector("a:nth-child(1) > strong:nth-child(1)"));
+			list.add(file.getText());
 		}
 		return list;
 	}
@@ -482,9 +478,6 @@ public class AppLevel extends CommonProject {
 	 * @return the name of the link
 	 */
 	public String firstBean() {
-		SelenideElement body = $(By.cssSelector("tbody"));
-		SelenideElement firstRow = body.$(By.cssSelector("tr:nth-child(2)")); //TODO ынести лоакторы
-		SelenideElement implementation = firstRow.$(By.cssSelector("td:nth-child(3) > a"));
 		String file = implementation.getText();
 		implementation.click();
 		return file;
@@ -512,9 +505,7 @@ public class AppLevel extends CommonProject {
 	 * @return
 	 */
 	public boolean sourceReportFile(String file) {
-		SelenideElement r = $(By.cssSelector("div.path.project-specific")); //TODO ынести лоакторы
-		String result = r.getText();
-
+		String result = path.getText();
 		int index = file.lastIndexOf(".");
 		String sub = file.substring(index + 1) + ".java";
 		
@@ -526,31 +517,20 @@ public class AppLevel extends CommonProject {
 	 * @return the number of rows in the data sources table.
 	 */
 	public int dataSource() {
-		SelenideElement table = $(By.cssSelector("table.table.table-striped.table-bordered")); //TODO ынести лоакторы
-		int x = 2;
-		while (true) {
-			try {
-				SelenideElement row = table.$(By.cssSelector("tr:nth-child(" + x + ")"));
-				x++;
-			}
-			catch (NoSuchElementException e) {
-				return x - 2;
-			}
-		}
+		ElementsCollection row = tableDataSource.$$(By.cssSelector("tr:nth-child(n)"));
+		return  row.size();
 	}
 	
 	/**
 	 * In some instances, this method can, inside of the table go through the rows, and click on the first link.
 	 */
 	public void clickFirstLink() {
-		SelenideElement table = $(By.cssSelector("tbody")); //TODO ынести лоакторы
-		SelenideElement link = table.$(By.cssSelector("tr:nth-child(2) > td:nth-child(1) > a:nth-child(1)"));
+		SelenideElement link = tableBody.$(By.cssSelector("tr:nth-child(2) > td:nth-child(1) > a:nth-child(1)"));
 		link.click();
 	}
 
 	public void clickCamelLink() {
-		SelenideElement table = $(By.cssSelector("tbody")); //TODO ынести лоакторы
-		SelenideElement link = table.$(By.ByLinkText.linkText("WEB-INF/camel-context.xml"));
+		SelenideElement link = tableBody.$(By.ByLinkText.linkText("WEB-INF/camel-context.xml"));
 		link.click();
 	}
 	
