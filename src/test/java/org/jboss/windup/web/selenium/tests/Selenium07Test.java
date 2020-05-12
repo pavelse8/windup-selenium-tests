@@ -3,7 +3,7 @@ package org.jboss.windup.web.selenium.tests;
 import java.awt.AWTException;
 
 //import junit.framework.TestCase;
-import org.jboss.windup.web.selenium.pages.CreateProject;
+import org.jboss.windup.web.selenium.pages.create_project.ChooseOrCreateProjetPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test the Project List and Maintenance
  */
 
-public class Selenium07Test  {
+public class Selenium07Test extends TestBase {
 
-	private CreateProject selenium;
+    private ChooseOrCreateProjetPage chooseProjectPage;
 
 	@BeforeEach
 	public void setUp() {
-		selenium = new CreateProject();
+        chooseProjectPage = new ChooseOrCreateProjetPage(true);
 	}
 
 	@Test
@@ -33,47 +33,47 @@ public class Selenium07Test  {
 		System.out.println (new Object() {}.getClass().getName() + ":" +
 				new Object() {}.getClass().getEnclosingMethod().getName());
 
-		assertEquals(selenium.getRhamtBaseUrl() + "rhamt-web/project-list", selenium.checkURL());
-		
-		selenium.sortProjectList("Created date", true);
+		assertEquals(chooseProjectPage.getRhamtBaseUrl() + "rhamt-web/project-list", chooseProjectPage.checkURL());
 
-		assertTrue(selenium.sortApplications());
-		assertTrue(selenium.sortNames());
+        chooseProjectPage.sortProjectList("Created date", true);
 
-		assertTrue(selenium.sortLastDate());
-		
+		assertTrue(chooseProjectPage.sortApplications());
+//		assertTrue(selenium.sortNames());
 
-		assertTrue(selenium.editProject(3, "Selenium06Test"));
-		
+		assertTrue(chooseProjectPage.sortLastDate());
 
-		selenium.updateProject();
+
+		assertTrue(chooseProjectPage.editProject(3, "Selenium06Test"));
+
+
+		chooseProjectPage.updateProject();
 		Thread.sleep(4000);
-		assertTrue(selenium.checkUpdateProject(3, "Selenium06Test"));
-		
+		assertTrue(chooseProjectPage.checkUpdateProject(3, "Selenium06Test"));
 
-		assertTrue(selenium.sortLastDate());
-		
 
-		selenium.projectSearch("2");
-		String list = selenium.listProjects().toString();
+		assertTrue(chooseProjectPage.sortLastDate());
+
+
+		chooseProjectPage.projectSearch("2");
+		String list = chooseProjectPage.listProjects().toString();
 		assertEquals(list, "[Selenium02Test]");
-		
-		selenium.clearProjectSearch();
-		list = selenium.listProjects().toString();
+
+		chooseProjectPage.clearProjectSearch();
+		list = chooseProjectPage.listProjects().toString();
 		System.out.println(list);
 		assertEquals("[Selenium01Test, Selenium02Test, Selenium06Test]", list);
-		
-		assertTrue(selenium.deleteProject("Selenium01Test"));
-		
-		assertTrue(selenium.cancelDeleteProject());
-		
-		assertTrue(selenium.deleteProject("Selenium06Test"));
 
-		assertTrue(selenium.clickDeleteProject());
+		assertTrue(chooseProjectPage.deleteProject("Selenium01Test"));
+
+		assertTrue(chooseProjectPage.cancelDeleteProject());
+
+		assertTrue(chooseProjectPage.deleteProject("Selenium06Test"));
+
+		assertTrue(chooseProjectPage.clickDeleteProject());
 		Thread.sleep(8000);
-		list = selenium.listProjects().toString();
+		list = chooseProjectPage.listProjects().toString();
 		assertEquals("[Selenium01Test, Selenium02Test]", list);
-		
+
 	}
 
 	@AfterEach

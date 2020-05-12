@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 //import junit.framework.TestCase;
-import org.jboss.windup.web.selenium.pages.AppLevel;
+import org.jboss.windup.web.selenium.pages.app_page.AppLevel;
+import org.jboss.windup.web.selenium.pages.create_project.ChooseOrCreateProjetPage;
+import org.jboss.windup.web.selenium.pages.edit_project.AnalysisPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 //import org.junit.After;
@@ -18,20 +20,24 @@ import static org.junit.jupiter.api.Assertions.*;
  *for application AdministracionEfectivo.ear, then for application AdditionWithSecurity-EAR-0.01.ear
  */
 
-public class Selenium05Test {
+public class Selenium05Test extends TestBase{
 
-	private AppLevel selenium;
+	private AppLevel appPage;
+	private AnalysisPage analysisPage;
+	private ChooseOrCreateProjetPage chooseProjectPage;
 
 	@BeforeEach
 	public void setUp() throws InterruptedException {
-		selenium = new AppLevel();
+		appPage = new AppLevel();
+		chooseProjectPage = new ChooseOrCreateProjetPage(true);
+		analysisPage = new AnalysisPage();
 
-		selenium.navigateProject("Selenium02Test");
-		selenium.waitForProjectLoad();
-		selenium.clickAnalysisReport(2);
+		chooseProjectPage.navigateProject("Selenium02Test");
+		chooseProjectPage.waitForProjectLoad();
+		analysisPage.clickAnalysisReport(2);
 		Thread.sleep(5000);
-		selenium.navigateTo(1);
-		selenium.clickApplication("AdministracionEfectivo.ear");
+		analysisPage.navigateTo(1);
+		appPage.clickApplication("AdministracionEfectivo.ear");
 	}
 
 	@Test
@@ -57,54 +63,54 @@ public class Selenium05Test {
 		list.add("About");
 		list.add("Send Feedback");
 		
-		ArrayList<String> collectedList = selenium.getHeader();
+		ArrayList<String> collectedList = appPage.getHeader();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 		
 		assertEquals(list, collectedList);
 
-		selenium.clickTab("Issues");
-		assertEquals("Issues", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("Issues");
+		assertEquals("Issues", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 		
 		// this also checks the yellow text box is there with its description and links
-		assertTrue(selenium.clickFirstIssue());
+		assertTrue(appPage.clickFirstIssue());
 
-		selenium.clickShowRule();
-		assertEquals("Rule Providers Execution Overview", selenium.pageTitle());
+		appPage.clickShowRule();
+		assertEquals("Rule Providers Execution Overview", appPage.pageTitle());
 		
-		selenium.goBack();
-		assertFalse(selenium.showRuleVisible());
-		assertEquals("Issues", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.goBack();
+		assertFalse(appPage.showRuleVisible());
+		assertEquals("Issues", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 
-		selenium.clickTab("Application Details");
-		assertEquals("Application Details", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("Application Details");
+		assertEquals("Application Details", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 
-		assertTrue(selenium.treeHierarchy());
+		assertTrue(appPage.treeHierarchy());
 		System.out.println("looking for story points");
-		assertTrue(selenium.findStoryPoints());
-		assertTrue(selenium.treeCollapsed());
+		assertTrue(appPage.findStoryPoints());
+		assertTrue(appPage.treeCollapsed());
 		
-		selenium.treeShowAll();
-		assertFalse(selenium.treeCollapsed());
+		appPage.treeShowAll();
+		assertFalse(appPage.treeCollapsed());
 		
-		selenium.treeShowLess();
-		assertTrue(selenium.treeCollapsed());
+		appPage.treeShowLess();
+		assertTrue(appPage.treeCollapsed());
 		
-		selenium.clickTab("Technologies");
-		assertEquals("Technologies", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("Technologies");
+		assertEquals("Technologies", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 
-		selenium.clickTab("Unparsable");
-		assertEquals("Unparsable Files Report", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
-		assertEquals("[recepcionDeposito.xhtml]", selenium.unparsableFiles().toString());
+		appPage.clickTab("Unparsable");
+		assertEquals("Unparsable Files Report", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
+		assertEquals("[recepcionDeposito.xhtml]", appPage.unparsableFiles().toString());
 
-		selenium.clickTab("Dependencies");
-		assertEquals("Dependencies", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("Dependencies");
+		assertEquals("Dependencies", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 		list = new ArrayList<>();
 		list.add("jdtcore-3.1.0.jar");
 		list.add("AdministracionEfectivo-ejb-0.0.1-SNAPSHOT.jar");
@@ -157,7 +163,7 @@ public class Selenium05Test {
 		list.add("quartz-2.2.0.jar");
 		list.add("quartz-jobs-2.2.0.jar");
 
-		collectedList = selenium.dependenciesList();
+		collectedList = appPage.dependenciesList();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 
@@ -166,63 +172,63 @@ public class Selenium05Test {
 		assertEquals(list.toString(), collectedList.toString());
 		
 		
-		String hash = selenium.clickMavenCoord();
+		String hash = appPage.clickMavenCoord();
 		Thread.sleep(2000);
-		selenium.navigateTo(2);
-		selenium.mavenSearch(hash);
-		assertTrue(selenium.checkURL().startsWith("https://search.maven.org"));
-		selenium.navigateTo(1);
+		appPage.navigateTo(2);
+		appPage.mavenSearch(hash);
+		assertTrue(appPage.checkURL().startsWith("https://search.maven.org"));
+		appPage.navigateTo(1);
 
 		// EJBs Tab
-		selenium.clickTab("EJBs");
-		assertEquals("EJB Report", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("EJBs");
+		assertEquals("EJB Report", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 		
-		String file = selenium.firstBean();
-		assertTrue(selenium.sourceReportFile(file));
-		assertEquals("Source Report", selenium.pageTitle());
+		String file = appPage.firstBean();
+		assertTrue(appPage.sourceReportFile(file));
+		assertEquals("Source Report", appPage.pageTitle());
 
-		selenium.goBack();
-		assertEquals("EJB Report", selenium.pageTitle());
+		appPage.goBack();
+		assertEquals("EJB Report", appPage.pageTitle());
 		
-		selenium.clickTab("JPA");
-		assertEquals("JPA Report", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("JPA");
+		assertEquals("JPA Report", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 		
-		file = selenium.clickJPAEntity();
-		assertTrue(selenium.sourceReportFile(file));
-		assertEquals("Source Report", selenium.pageTitle());
+		file = appPage.clickJPAEntity();
+		assertTrue(appPage.sourceReportFile(file));
+		assertEquals("Source Report", appPage.pageTitle());
 		
-		selenium.goBack();
-		assertEquals("JPA Report", selenium.pageTitle());
+		appPage.goBack();
+		assertEquals("JPA Report", appPage.pageTitle());
 
-		selenium.clickTab("Server Resources");
-		assertEquals("Server Resources", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
-		assertEquals(1, selenium.dataSource());
+		appPage.clickTab("Server Resources");
+		assertEquals("Server Resources", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
+		assertEquals(1, appPage.dataSource());
 
-		selenium.clickTab("Hard-coded IP Addresses");
-		assertEquals("Hard-coded IP Addresses", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
+		appPage.clickTab("Hard-coded IP Addresses");
+		assertEquals("Hard-coded IP Addresses", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
 		
-		selenium.clickFirstLink();
+		appPage.clickFirstLink();
 		//cannot check actual location scrolled into view
 		
-		selenium.goBack();
+		appPage.goBack();
 
-		selenium.clickTab("Ignored Files");
-		assertEquals("Ignored Files", selenium.pageTitle());
-		assertEquals("AdministracionEfectivo.ear", selenium.pageApp());
-		assertEquals(44, selenium.ignoreFile());
+		appPage.clickTab("Ignored Files");
+		assertEquals("Ignored Files", appPage.pageTitle());
+		assertEquals("AdministracionEfectivo.ear", appPage.pageApp());
+		assertEquals(44, appPage.ignoreFile());
 	}
 
 	@Test
 	public void test02App2Tabs() throws InterruptedException {
 
-		selenium.clickTab("All Applications");
+		appPage.clickTab("All Applications");
 		
-		selenium.clickApplication("AdditionWithSecurity-EAR-0.01.ear");
-		assertEquals("AdditionWithSecurity-EAR-0.01.ear", selenium.pageApp());
+		appPage.clickApplication("AdditionWithSecurity-EAR-0.01.ear");
+		assertEquals("AdditionWithSecurity-EAR-0.01.ear", appPage.pageApp());
 
 		ArrayList<String> list = new ArrayList<>();
 		list.add("All Applications");
@@ -237,7 +243,7 @@ public class Selenium05Test {
 		list.add("About");
 		list.add("Send Feedback");
 		
-		ArrayList<String> collectedList = selenium.getHeader();
+		ArrayList<String> collectedList = appPage.getHeader();
 		Collections.sort(collectedList);
 		Collections.sort(list);
 		
@@ -245,31 +251,31 @@ public class Selenium05Test {
 		
 
 		//Step 28
-		selenium.clickTab("Spring Beans");
-		assertEquals("Spring Bean Report", selenium.pageTitle());
-		assertEquals("AdditionWithSecurity-EAR-0.01.ear", selenium.pageApp());
+		appPage.clickTab("Spring Beans");
+		assertEquals("Spring Bean Report", appPage.pageTitle());
+		assertEquals("AdditionWithSecurity-EAR-0.01.ear", appPage.pageApp());
 		
 		//Step 29
-		selenium.clickCamelLink();
+		appPage.clickCamelLink();
 		assertEquals(
 				"AdditionWithSecurity-EAR-0.01.ear/AdditionWithSecurity-Service-0.01.war/WEB-INF/camel-context.xml",
-				selenium.sourceReportPath());
+				appPage.sourceReportPath());
 
 		//Step 30
-		selenium.goBack();
+		appPage.goBack();
 		
 		//step 31
-		selenium.clickTab("About");
-		assertEquals("About", selenium.pageTitle());
+		appPage.clickTab("About");
+		assertEquals("About", appPage.pageTitle());
 
 		//Step 32
-		selenium.clickSendFeedback();
-		selenium.moveToFeedback();
-		assertEquals("null", selenium.feedbackRadioButton());
+		appPage.clickSendFeedback();
+		appPage.moveToFeedback();
+		assertEquals("null", appPage.feedbackRadioButton());
 		
 		//Step 33
-		selenium.closeFeedback();
-		assertTrue(selenium.popupRemoved("atlwdg-blanket"));
+		appPage.closeFeedback();
+		assertTrue(appPage.popupRemoved("atlwdg-blanket"));
 	}
 
 

@@ -1,9 +1,10 @@
-package org.jboss.windup.web.selenium.pages;
+package org.jboss.windup.web.selenium.pages.app_page;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
+import org.jboss.windup.web.selenium.pages.BasePage;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -15,22 +16,24 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 
-public class AppLevel extends CommonProject {
-	long TIMEOUT = 20000;
-	SelenideElement header = $(By.cssSelector("ul.nav.navbar-nav"));
-	SelenideElement feedback = $(By.cssSelector("ul.nav.navbar-nav.navbar-right"));
-	SelenideElement appPage = $(By.cssSelector("div.path"));
-	SelenideElement feedbackHeader = $(By.cssSelector("ul.nav:nth-child(2)"));
-	SelenideElement tableBody = $(By.cssSelector("tbody"));
-	SelenideElement path = $(By.cssSelector("div.path.project-specific"));
-	SelenideElement cancel = $(By.cssSelector("a.cancel"));
-	SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
-	SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
-	SelenideElement bodyUnparsableFile = $(By.cssSelector("div.row.unparsableFile"));
-	SelenideElement tableUnparsableFile = bodyUnparsableFile.$(By.cssSelector("tbody"));
-	SelenideElement firstRow = tableBody.$(By.cssSelector("tr:nth-child(2)")); //TODO ынести лоакторы
-	SelenideElement implementation = firstRow.$(By.cssSelector("td:nth-child(3) > a"));
-	SelenideElement tableDataSource = $(By.cssSelector("table.table.table-striped.table-bordered"));
+public class AppLevel extends BasePage {
+	//locators:
+	private SelenideElement header = $(By.cssSelector("ul.nav.navbar-nav"));
+	private SelenideElement feedback = $(By.cssSelector("ul.nav.navbar-nav.navbar-right"));
+	private SelenideElement appPage = $(By.cssSelector("div.path"));
+	private SelenideElement feedbackHeader = $(By.cssSelector("ul.nav:nth-child(2)"));
+	private SelenideElement tableDataSource = $(By.cssSelector("table.table.table-striped.table-bordered"));
+	private SelenideElement path = $(By.cssSelector("div.path.project-specific"));
+	private SelenideElement cancel = $(By.cssSelector("a.cancel"));
+	private SelenideElement dialogue = $(By.cssSelector("iframe#atlwdg-frame"));
+	private SelenideElement ratings = $(By.cssSelector("div#feedback-rating"));
+	//locators-control:
+	private SelenideElement bodyUnparsableFile = $(By.cssSelector("div.row.unparsableFile"));
+	private SelenideElement tableUnparsableFile = bodyUnparsableFile.$(By.cssSelector("tbody"));
+	private SelenideElement tableBody = $(By.cssSelector("tbody"));
+	private SelenideElement firstRow = tableBody.$(By.cssSelector("tr:nth-child(2)"));
+	private SelenideElement implementation = firstRow.$(By.cssSelector("td:nth-child(3) > a"));
+
 
 	public AppLevel()
 	{
@@ -97,25 +100,7 @@ public class AppLevel extends CommonProject {
 	public String pageApp() {
 		return appPage.getText();
 	}
-	
-	/**
-	 * on the Analysis Results page, this will click the reports button based on the 
-	 * index given
-	 * @param index
-	 * @return
-	 */
-	public String clickAnalysisReport(int index) {
-		SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
-		result.waitUntil(Condition.enabled, TIMEOUT);
-		SelenideElement actions = result.$(By.cssSelector("td:nth-child(5)"));
-		SelenideElement report = actions.$(By.cssSelector("a.pointer.link"));
-		String url = report.getAttribute("href");
-		
-		report.click();
-		
-		return url;
-	}
-	
+
 	/**
 	 * this method will go through all the applications listed, and clicks on the one specified
 	 * @param application
@@ -171,45 +156,25 @@ public class AppLevel extends CommonProject {
 		JavascriptExecutor jse2 = (JavascriptExecutor)driver;
 		jse2.executeScript("arguments[0].click()", link);
 
-		//link.click();
-
 		SelenideElement fileExpanded = body.$(By.cssSelector("tr:nth-child(2)"));
 		body = fileExpanded.$(By.cssSelector("tbody"));
 		int total = 0;
-		int x = 1;
-		while (true) {
-			try {
-				SelenideElement file = body.$(By.cssSelector("tr:nth-child(" + x + ")"));
-				SelenideElement incident = file.$(By.cssSelector("td.text-right"));
-				total += Integer.valueOf(incident.getText());
-
-				if (x == 1) {
-					//this WebElement is the yellow text box holding the show rule link
-					SelenideElement textBox = file.$(By.cssSelector("div.panel.panel-default.hint-detail-panel"));
-					//collects the title for the show rule panel
-					SelenideElement title = textBox.$(By.cssSelector(".panel-title"));
-					//cuts out the "Issue Detail:" part of the title for the rule
-					String t = title.getText().substring(13);
-					//if the textbox is not yellow and the string i (the issue link) does not equal t (the textbox's title)
-					//then false is returned
-					if (!textBox.getCssValue("background-color").equals("rgba(255, 252, 220, 1)") && (!t.equals(i))) {
-						return false;
-					}
-					//lastly it checks that the show rule link is there
-					SelenideElement showRule = file.$(By.cssSelector("a.sh_url"));
-				}
-				x++;
-			} catch (NoSuchElementException e) {
-				if (x == 1) {
+		ElementsCollection file = body.$$(By.cssSelector("tr:nth-child(n)"));
+		if (file.size()==0){return false;}
+		for(int n =0; n<file.size();n++){
+			SelenideElement incident = file.get(n).$(By.cssSelector("td.text-right"));
+			total += Integer.valueOf(incident.getText());
+			if (n ==0) {
+				SelenideElement textBox = file.get(n).$(By.cssSelector("div.panel.panel-default.hint-detail-panel"));
+				SelenideElement title = textBox.$(By.cssSelector(".panel-title"));
+				String t = title.getText().substring(13);
+				if (!textBox.getCssValue("background-color").equals("rgba(255, 252, 220, 1)") && (!t.equals(i))) {
 					return false;
 				}
-				break;
+				SelenideElement showRule = file.get(n).$(By.cssSelector("a.sh_url"));
 			}
 		}
-		if (totalIncidents == total) {
-			return true;
-		}
-		return false;
+		return totalIncidents == total ? true: false;
 	}
 
 	/**
@@ -225,6 +190,16 @@ public class AppLevel extends CommonProject {
 		SelenideElement showRule = body.$(By.cssSelector("a.sh_url"));
 		String rule = showRule.getCssValue("title");
 		showRule.click();
+	}
+
+	public String clickAnalysisReport(int index) {
+		SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
+		SelenideElement report = result.$(By.cssSelector("td:nth-child(5)")).$(By.cssSelector("a.pointer.link"));
+		String url = report.getAttribute("href");
+
+		report.click();
+
+		return url;
 	}
 
 	/**

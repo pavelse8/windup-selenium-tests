@@ -1,9 +1,11 @@
-package org.jboss.windup.web.selenium.pages;
+package org.jboss.windup.web.selenium.pages.analyze_project;
 
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
+import org.jboss.windup.web.selenium.pages.BasePage;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 /**
  * 
@@ -21,17 +24,17 @@ import static com.codeborne.selenide.Selenide.$;
  *
  */
 
-public class AnalyzeProject extends CommonProject {
-
-	SelenideElement tabs = $(By.cssSelector("ul.nav.navbar-nav"));
-	SelenideElement feedback = $(By.cssSelector("ul.nav.navbar-nav.navbar-right"));
-	SelenideElement appList = $(By.cssSelector(".real"));
-	SelenideElement sorts = $(By.cssSelector("div#sort.form-group"));
-	SelenideElement filterType = $(By.cssSelector("div#filter-type"));
-	SelenideElement filter = $(By.cssSelector("div#filter-div.form-group.toolbar-pf-filter"));
-	SelenideElement search = $(By.cssSelector("input#filter.form-control"));
-	SelenideElement clear = $(By.cssSelector("a#clear-filters"));
-	SelenideElement activeFilters = $(By.cssSelector("ul#active-filters"));
+public class AnalyzeProject extends BasePage {
+	//locators:
+	private SelenideElement tabs = $(By.cssSelector("ul.nav.navbar-nav"));
+	private SelenideElement feedback = $(By.cssSelector("ul.nav.navbar-nav.navbar-right"));
+	private SelenideElement appList = $(By.cssSelector(".real"));
+	private SelenideElement sorts = $(By.cssSelector("div#sort.form-group"));
+	private SelenideElement filterType = $(By.cssSelector("div#filter-type"));
+	private SelenideElement filter = $(By.cssSelector("div#filter-div.form-group.toolbar-pf-filter"));
+	private SelenideElement search = $(By.cssSelector("input#filter.form-control"));
+	private SelenideElement clear = $(By.cssSelector("a#clear-filters"));
+	private SelenideElement activeFilters = $(By.cssSelector("ul#active-filters"));
 
 	public AnalyzeProject() throws InterruptedException {
         waitForProjectList();
@@ -41,75 +44,30 @@ public class AnalyzeProject extends CommonProject {
 		navigateTo(1);
 	}
 
-	/**
-	 * this switches the tab on the window
-	 * 
-	 * @param index
-	 *            starts at 0
-	 */
 	public void switchTab(int index) {
 		SelenideElement tab = tabs.$(By.cssSelector("li:nth-child(" + index + ")"));
 		tab.click();
-
 		waitForTabLoad();
-
-		WebDriverWait wait = new WebDriverWait(driver,20);
-
-
-		try
-		{
-			tabs.shouldBe(Condition.exist);
-			SelenideElement childTabs = tabs.$(By.cssSelector("li:nth-child(" + index + ")" +
-					".active"));
+		if(tabs.exists()) {
+			SelenideElement childTabs = tabs.$(By.cssSelector("li:nth-child(" + index + ")" + ".active"));
 			childTabs.waitUntil(Condition.enabled, TIMEOUT);
-		}
-		catch (org.openqa.selenium.NoSuchElementException e)
-		{
-			System.out.println ("NoSuchElementException exception " +
-						new Object() {}
-								.getClass()
-								.getName() + ":" +
-						new Object() {}
-								.getClass()
-								.getEnclosingMethod().getName() + " " +
-						e.getMessage()
-						);
+		} else {
+			System.out.println ("NoSuchElementException exception" + tabs);
 		}
 
 	}
 
-
-	/**
-	 * This will click on the Send Feedback tab on the top right side of the page
-	 * 
-	 * @throws InterruptedException
-	 */
 	public void clickSendFeedback() throws InterruptedException {
 		feedback.waitUntil(Condition.enabled, TIMEOUT);
 		feedback.click();
 	}
 
-
-
-	/**
-	 * on the Analysis Results page, this will click the reports button based on the
-	 * index given
-	 * 
-	 * @param index
-	 * @return
-	 */
 	public String clickAnalysisReport(int index) {
-
-		System.out.println (new Object() {}.getClass().getName() + ":" +
-				new Object() {}.getClass().getEnclosingMethod().getName());
-
 		SelenideElement result = $(By.xpath("(//*[@class='success'])[" + index + "]"));
 		SelenideElement report = result.$(By.cssSelector("td:nth-child(5)")).$(By.cssSelector("a.pointer.link"));
 		String url = report.getAttribute("href");
 
 		report.click();
-
-		System.out.println("URL:" + url);
 
 		return url;
 	}
@@ -118,44 +76,24 @@ public class AnalyzeProject extends CommonProject {
 	 * *************** SORTING METHODS ***************
 	 */
 
-	/**
-	 * this will collect an arraylist of application objects that will in turn
-	 * collect the name and story point count of each application
-	 * 
-	 * @return the arraylist of application objects
-	 */
 	public ArrayList<Application> listApplications() {
 		ArrayList<Application> list = new ArrayList<>();
+		ElementsCollection app = appList.$$(By.xpath("(//*[@class='appInfo pointsShared0]"));
+		for (int i=0; i<app.size();i++){
+			SelenideElement title = app.get(i).$(By.xpath("(//*[@class='fileName'])[" + (i+1) + "]"));
+			SelenideElement storyPoint = app.get(i).$(By.cssSelector("span.points"));
 
-		int x = 1;
-		while (true) {
-
-			SelenideElement app = appList.$(By.xpath("(//*[@class='appInfo pointsShared0'])[" + x + "]"));
-			SelenideElement title = app.$(By.xpath("(//*[@class='fileName'])[" + x + "]"));
-			SelenideElement storyPoint = app.$(By.cssSelector("span.points"));
-
-			if(title.isDisplayed()){
 				if (title.getText().equals("Archives shared by multiple applications")) {
 					return list;
-				} else if (!app.getAttribute("style").equals("display: none;")) {
+				} else if (!app.get(i).getAttribute("style").equals("display: none;")) {
 					Application a = new Application(title.getText(), storyPoint.getText());
 					list.add(a);
 				}
-				x++;
-			} else{
-				return list;
-			}
 		}
+		return list;
 	}
 
-	/**
-	 * The Status class has a type and output, the type can be warning, success
-	 * danger, and info, which are found from the output's class name.
-	 * 
-	 * @author edixon
-	 *
-	 */
-	class Application {
+	public class Application {
 
 		String name;
 		int storyPoints;
@@ -211,10 +149,6 @@ public class AnalyzeProject extends CommonProject {
 			list.add(a.storyPoints);
 		}
 		return list;
-	}
-
-	public void projectSort() {
-
 	}
 
 	/**
@@ -276,20 +210,19 @@ public class AnalyzeProject extends CommonProject {
 	 */
 	public boolean sortApplicationList(String sortOrder, boolean ascending) {
 		dropDown(sorts, sortOrder);
-
-		try {
-			WebElement order = driver.findElement(By.cssSelector("span.fa.fa-sort-alpha-asc"));
-			if (ascending == false) {
+		SelenideElement order = $(By.cssSelector("span.fa.fa-sort-alpha-asc"));
+		SelenideElement orderSort = sorts.$(By.cssSelector("span.fa.fa-sort-alpha-desc"));
+		if(order.exists()) {
+			if (!ascending) {
 				order.click();
 			}
 			return true;
-		} catch (NoSuchElementException e) {
-			try {
-				WebElement order = sorts.findElement(By.cssSelector("span.fa.fa-sort-alpha-desc"));
-				if (ascending == true) {
+		} else {
+			if(orderSort.exists()){
+				if (ascending) {
 					order.click();
 				}
-			} catch (NoSuchElementException ex) {
+			} else {
 				return false;
 			}
 		}
@@ -340,18 +273,13 @@ public class AnalyzeProject extends CommonProject {
 	 * @return true if the filter is found and deleted
 	 */
 	public boolean deleteFilter(String filterType, String filterName) {
-		int x = 1;
-		while (true) {
-			SelenideElement filter = activeFilters.$(By.cssSelector("li:nth-child(" + x + ")"));
-			if (filter.exists()) {
-				if (filter.getText().equals(filterType + filterName)) {
-					SelenideElement delete = filter.$(By.cssSelector("span.glyphicon.glyphicon-remove"));
-					delete.click();
-					return true;
-				}
-				x++;
+		ElementsCollection filter = activeFilters.$$(By.cssSelector("li:nth-child(n)"));
+		for(int i=0;i<filter.size();i++) {
+			if (filter.get(i).getText().equals(filterType + filterName)) {
+				SelenideElement delete = filter.get(i).$(By.cssSelector("span.glyphicon.glyphicon-remove"));
+				delete.click();
+				return true;
 			}
-			else {break;}
 		}
 		return false;
 	}
@@ -369,22 +297,11 @@ public class AnalyzeProject extends CommonProject {
 		SelenideElement dropDown = f.$(By.cssSelector("button.btn.btn-default.dropdown-toggle"));
 		dropDown.click();
 		SelenideElement menu = f.$(By.className("dropdown-menu"));
-		int x = 1;
-		while (true) {
-			try {
-				SelenideElement option = menu.$(By.cssSelector("li:nth-child(" + x + ")"));
-				if (option.exists()){
-					if (option.getText().equals(name)) {
-						option.click();
-						break;
-					}
-					x++;
-				} else {
-					break;
-				}
+		ElementsCollection option = menu.$$(By.cssSelector("li:nth-child(n)"));
 
-			} catch (NoSuchElementException e) {
-				break;
+		for(int i=0; i < option.size(); i++) {
+			if (option.get(i).getText().equals(name)) {
+				option.get(i).click();
 			}
 		}
 	}
@@ -397,19 +314,12 @@ public class AnalyzeProject extends CommonProject {
 	 */
 	public ArrayList<String> allIssuesReport() {
 		ArrayList<String> list = new ArrayList<>();
-		int x = 1;
-		while (true) {
-			SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(" + x + ")"));
-			SelenideElement title = table.$(By.cssSelector("td:nth-child(1)"));
-			if(title.exists()){
+		ElementsCollection table = $$(By.cssSelector("table.tablesorter:nth-child(n)"));
+		for(int i=0; i < 0; i++) {
+			SelenideElement title = table.get(i).$(By.cssSelector("td:nth-child(1)"));
 				list.add(title.getText());
-				x++;
 			}
-			else {break;}
-
-		}
 		return list;
-
 	}
 
 	/**
@@ -423,16 +333,13 @@ public class AnalyzeProject extends CommonProject {
 	 * @return true if the sorts in all issues work
 	 */
 	public boolean sortAllIssues() {
-
+		ElementsCollection table = $$(By.cssSelector("table.tablesorter:nth-child(n)"));
 		Boolean working = false;
-		int x = 1;
 
-		while (true) {
-			try {
-				SelenideElement table = $(By.cssSelector("table.tablesorter:nth-child(" + x + ")"));
-				SelenideElement title = table.$(By.cssSelector("tr.tablesorter-ignoreRow"));
-				SelenideElement sortRow = table.$(By.cssSelector("tr.tablesorter-headerRow"));
-				SelenideElement body = table.$(By.cssSelector("tbody"));
+		for(int i=0; i< table.size(); i++){
+				SelenideElement title = table.get(i).$(By.cssSelector("tr.tablesorter-ignoreRow"));
+				SelenideElement sortRow = table.get(i).$(By.cssSelector("tr.tablesorter-headerRow"));
+				SelenideElement body = table.get(i).$(By.cssSelector("tbody"));
 
 				for (int y = 1; y < 6; y++) {
 
@@ -506,12 +413,7 @@ public class AnalyzeProject extends CommonProject {
 						}
 					}
 				}
-
-				x++;
-			} catch (NoSuchElementException e) {
-				break;
 			}
-		}
 		return working;
 	}
 
@@ -525,20 +427,13 @@ public class AnalyzeProject extends CommonProject {
 	 */
 	private ArrayList<String> collectBody(SelenideElement table) {
 		ArrayList<String> list = new ArrayList<>();
-		int x = 1;
-		while (true) {
-				SelenideElement file = table.$(By.cssSelector("tr:nth-child(" + x + ")"));
-				SelenideElement attribute = file.$(By.cssSelector("td:nth-child(1)"));
-
-				if(attribute.exists()) {
+		ElementsCollection file = table.$$(By.cssSelector("tr:nth-child(odd)"));
+		for (int i = 0; i < file.size(); i++) {
+			SelenideElement attribute = file.get(i).$(By.cssSelector("td:nth-child(1)"));
+			if (attribute.exists()) {
 				list.add(attribute.getText().toLowerCase());
-
-				x += 2;
-			} else {
-				break;
 			}
 		}
-
 		return list;
 	}
 
@@ -612,7 +507,6 @@ public class AnalyzeProject extends CommonProject {
 	 * @return an arraylsist of sorted strings
 	 */
 	private ArrayList<String> sortStringDesc(ArrayList<String> list) {
-
 		ArrayList<String> sorted = list;
 		Collections.sort(sorted, Collections.reverseOrder());
 		return sorted;

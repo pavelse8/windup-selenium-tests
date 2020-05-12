@@ -26,7 +26,7 @@ public final class Property {
         }
         longTimeOut = Long.parseLong(getProp("LONGTIMEOUT","100000"));
         timeOut = Long.parseLong(getProp("TIMEOUT","10000"));
-        rhamtBaseUrl = getProp("baseUrl", "http://127.0.0.1:8080/");
+        rhamtBaseUrl = getProp("baseUrl", "");
     }
 
     public static Property getInstance() {

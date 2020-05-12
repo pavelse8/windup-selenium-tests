@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 //import junit.framework.TestCase;
-import org.jboss.windup.web.selenium.pages.AnalyzeProject;
+import org.jboss.windup.web.selenium.pages.analyze_project.AnalyzeProject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *Navigate through Project Level static reports from an analysis run of Project Selenium02Test
  */
 
-public class Selenium04Test{
+public class Selenium04Test extends TestBase{
 
 	private AnalyzeProject selenium;
 

@@ -4,7 +4,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 //import junit.framework.TestCase;
-import org.jboss.windup.web.selenium.pages.EditProject;
+import org.jboss.windup.web.selenium.pages.create_project.ChooseOrCreateProjetPage;
+import org.jboss.windup.web.selenium.pages.edit_project.AnalysisPage;
+import org.jboss.windup.web.selenium.pages.edit_project.AppsPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,119 +21,112 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Project Selenium02Test created via the methods within class Selenium02Test
  */
 
-public class Selenium03Test {
+public class Selenium03Test extends TestBase{
 
-	private EditProject selenium;
+
+	private AnalysisPage analysisPage;
+	private AppsPage appsPage;
+	private ChooseOrCreateProjetPage chooseProjetPage;
 
 	@BeforeEach
 	public void setUp() {
-		selenium = new EditProject();
+		analysisPage = new AnalysisPage();
+		appsPage = new AppsPage();
+		chooseProjetPage = new ChooseOrCreateProjetPage(true);
 	}
 
 	@Test
 	public void test01ProjectList() throws ParseException {
-		assertTrue(selenium.navigateProject("Selenium02Test"));
-		selenium.waitForProjectLoad("Selenium02Test");
-		assertTrue(selenium.checkURL().endsWith("/project-detail"));
-		
-		selenium.clickProjectsIcon();
-		assertEquals(selenium.getRhamtBaseUrl() + "rhamt-web/project-list", selenium.checkURL());
+		assertTrue(chooseProjetPage.navigateProject("Selenium02Test"));
+		chooseProjetPage.waitForProjectLoad("Selenium02Test");
+		assertTrue(analysisPage.checkURL().endsWith(analysisPage.baseURL));
 
-		assertTrue(selenium.navigateProject("Selenium02Test"));
-		selenium.waitForProjectLoad("Selenium02Test");
-		assertTrue(selenium.checkURL().endsWith("/project-detail"));
+		analysisPage.clickProjectsIcon();
+		assertEquals(chooseProjetPage.getRhamtBaseUrl() + "rhamt-web/project-list", chooseProjetPage.checkURL());
 
-		//asserts the project name Selenium02Test is indeed in the dropdown
-		assertEquals("Project\nSelenium02Test", selenium.dropDownInfo());
-		//will return what active panel is there
-		assertEquals("Analysis Results", selenium.activePage());
-		assertEquals(2, selenium.analysisResultsShown());
+		assertTrue(chooseProjetPage.navigateProject("Selenium02Test"));
+		chooseProjetPage.waitForProjectLoad("Selenium02Test");
 
-		assertTrue(selenium.sortString(1, "Analysis"));
-		assertTrue(selenium.sortStatus());
-		assertTrue(selenium.sortDate(3, "Start Date"));
-		assertTrue(selenium.sortString(4, "Applications"));
+		assertTrue(analysisPage.checkURL().endsWith(analysisPage.baseURL));
 
-		ArrayList<String> list = selenium.collectTableCol(1);
+		assertEquals("Project\nSelenium02Test", analysisPage.dropDownInfo());
+		assertEquals("Analysis Results", analysisPage.activePage());
+		assertEquals(2, analysisPage.analysisResultsShown());
+
+		//TODO Вынести все методы сортировки в отдельный файл
+		assertTrue(analysisPage.sortString(1, "Analysis"));
+		assertTrue(analysisPage.sortStatus());
+		assertTrue(analysisPage.sortDate(3, "Start Date"));
+		assertTrue(analysisPage.sortString(4, "Applications"));
+
+		ArrayList<String> list = analysisPage.collectTableCol(1);
 		String analysis = list.get(0).toString();
-		
-		selenium.search(analysis.substring(1));
-		assertEquals("[" + analysis + "]", selenium.collectTableCol(1).toString());
-		
-		selenium.cancelSearch();
+
+		analysisPage.search(analysis.substring(1));
+		assertEquals("[" + analysis + "]", analysisPage.collectTableCol(1).toString());
+
+		analysisPage.cancelSearch();
 
 	}
 
 	@Test
 	public void test02MaintainApps() throws ParseException {
-		assertTrue(selenium.navigateProject("Selenium02Test"));
-		
-		selenium.clickApplications();
-		assertTrue(selenium.checkURL().endsWith("/applications"));
+		assertTrue(chooseProjetPage.navigateProject("Selenium02Test"));
 
-		assertEquals("Applications", selenium.activePage());
+		analysisPage.clickApplications();
+		assertTrue(appsPage.checkURL().endsWith("/applications"));
 
-		assertTrue(selenium.sortString(1, "Application"));
-		assertTrue(selenium.sortDate(2, "Date Added"));
+		assertEquals("Applications", appsPage.activePage());
+
+		assertTrue(appsPage.sortString(1, "Application"));
+		assertTrue(analysisPage.sortDate(2, "Date Added"));
 		
 		ArrayList<String> table = new ArrayList<>();
 		table.add("arit-ear-0.8.1-SNAPSHOT.ear");
 		table.add("AdditionWithSecurity-EAR-0.01.ear");
 		table.add("AdministracionEfectivo.ear");
 		
-		assertEquals(table, selenium.collectTableCol(1));
+		assertEquals(table, analysisPage.collectTableCol(1));
 
-		selenium.deleteApplication("arit-ear-0.8.1-SNAPSHOT.ear");
+		appsPage.deleteApplication("arit-ear-0.8.1-SNAPSHOT.ear");
 		assertEquals(
 				"Confirm Application Deletion;Are you sure you want to delete 'arit-ear-0.8.1-SNAPSHOT.ear'?",
-				selenium.popupInfo());
-		
-		selenium.deletePopup();
-		assertTrue(selenium.popupRemoved("deleteAppDialog"));
-		
-		assertEquals(table, selenium.collectTableCol(1));
-		
+				analysisPage.popupInfo());
 
-//		selenium.deleteApplication("arit-ear-0.8.1-SNAPSHOT.ear");
-//		selenium.acceptPopup();
-//		assertTrue(selenium.popupRemoved("deleteAppDialog"));
-//		table.remove(0);
-//		assertEquals(table, selenium.collectTableCol(1));
-//		selenium.collectTableCol(1).toString());
+		analysisPage.deletePopup();
+		assertTrue(analysisPage.popupRemoved("deleteAppDialog"));
+		assertEquals(table, analysisPage.collectTableCol(1));
 
-		selenium.search("Admin");
-		assertEquals("[AdministracionEfectivo.ear]", selenium.collectTableCol(1).toString());
-		
-		selenium.cancelSearch();
+		analysisPage.search("Admin");
+		assertEquals("[AdministracionEfectivo.ear]", analysisPage.collectTableCol(1).toString());
+
+		analysisPage.cancelSearch();
 
 	}
 
 	@Test
 	public void test03MaintainAnalysisRuns() throws InterruptedException {
-		assertTrue(selenium.navigateProject("Selenium02Test"));
-		selenium.clickAnalysisConfiguration();
+		final String PROJNAMEONE = "Selenium01Test";
+		final String PROJNAMETWO = "Selenium02Test";
 
-		selenium.clickProjDropDown("Selenium01Test");
-		assertEquals("Project\nSelenium01Test", selenium.dropDownInfo());
+		assertTrue(chooseProjetPage.navigateProject(PROJNAMETWO));
+		analysisPage.clickAnalysisConfiguration();
 
-		selenium.clickProjDropDown("Selenium02Test");
-		assertEquals("Project\nSelenium02Test", selenium.dropDownInfo());
-		
-		selenium.deleteAnalysisResults(2);
-		String num = selenium.analysisName(2);
-		assertEquals("Confirm Analysis Deletion;Are you sure you want to delete analysis " + num + "?", selenium.popupInfo());
-		
-		selenium.deletePopup();
-		assertTrue(selenium.popupRemoved("deleteAppDialog"));
-		
+		analysisPage.clickProjDropDown(PROJNAMEONE);
+		assertEquals("Project\nSelenium01Test", analysisPage.dropDownInfo());
 
-		// would be a pain to re-do
-		// selenium.deleteAnalysisResults(2);
-		// selenium.acceptPopup();
-		// assertTrue(selenium.popupRemoved("deleteAppDialog"));
+		analysisPage.clickProjDropDown(PROJNAMETWO);
+		assertEquals("Project\nSelenium02Test", analysisPage.dropDownInfo());
+
+		analysisPage.deleteAnalysisResults(2);
+		String num = analysisPage.analysisName(2);
+		assertEquals("Confirm Analysis Deletion;Are you sure you want to delete analysis " + num + "?", analysisPage.popupInfo());
+
+		analysisPage.deletePopup();
+		assertTrue(analysisPage.popupRemoved("deleteAppDialog"));
 		
-		String url = selenium.clickAnalysisReport(1);
-		selenium.navigateTo(1);
+		String url = analysisPage.clickAnalysisReport(1);
+		analysisPage.navigateTo(1);
 
 	}
 

@@ -5,11 +5,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.jboss.windup.web.selenium.pages.AppLevel;
-import org.jboss.windup.web.selenium.pages.CreateProject;
+import org.jboss.windup.web.selenium.pages.app_page.AppLevel;
 //import org.junit.After;
 //import org.junit.FixMethodOrder;
 //import org.junit.runners.MethodSorters;
+import org.jboss.windup.web.selenium.pages.create_project.AddApplicationsPage;
+import org.jboss.windup.web.selenium.pages.create_project.ChooseOrCreateProjetPage;
+import org.jboss.windup.web.selenium.pages.create_project.ConfigureAnalysisPage;
+import org.jboss.windup.web.selenium.pages.create_project.ProjectDescriptionPage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.NoSuchElementException;
 
@@ -22,114 +26,119 @@ import static org.junit.jupiter.api.Assertions.*;
  * have generated additional report content
  */
 
-public class Selenium06Test {
+public class Selenium06Test extends TestBase{
 
-    CreateProject seleniumCreate;
     AppLevel seleniumAppLevel;
+    ProjectDescriptionPage descriptionPage;
+    AddApplicationsPage applicationsPage;
+	ConfigureAnalysisPage configureAnalysisPage;
+	ChooseOrCreateProjetPage chooseProjectPage;
 
-	public void setUp() {}
+	@BeforeEach
+	public void setUp() {
+		chooseProjectPage = new ChooseOrCreateProjetPage(true);
+		applicationsPage = new AddApplicationsPage();
+		descriptionPage = new ProjectDescriptionPage();
+	}
 
 	@Test
 	public void test01CreateProjectAdvancedOptions() throws AWTException, InterruptedException {
 
-		System.out.println (new Object() {}.getClass().getName() + ":" +
-				new Object() {}.getClass().getEnclosingMethod().getName());
+		assertEquals(chooseProjectPage.getRhamtBaseUrl() + "rhamt-web/project-list", chooseProjectPage.checkURL());
+		chooseProjectPage.clickProjButton();
+		assertEquals(chooseProjectPage.getRhamtBaseUrl() + "rhamt-web/wizard/create-project", chooseProjectPage.checkURL());
 
-		seleniumCreate = new CreateProject();
-
-		assertEquals(seleniumCreate.getRhamtBaseUrl() + "rhamt-web/project-list", seleniumCreate.checkURL());
-		seleniumCreate.clickProjButton();
-		assertEquals(seleniumCreate.getRhamtBaseUrl() + "rhamt-web/wizard/create-project", seleniumCreate.checkURL());
-
-		assertTrue(seleniumCreate.nameInputSelected());
-		assertTrue(seleniumCreate.cancelEnabled());
-		assertFalse(seleniumCreate.nextEnabled());
+		assertTrue(descriptionPage.nameInputSelected());
+		assertTrue(descriptionPage.cancelEnabled());
+		assertFalse(descriptionPage.nextEnabled());
 
 		// properly inputs the project name & description
-		seleniumCreate.inputProjName("Selenium06Test");
-		assertTrue(seleniumCreate.nextEnabled());
-		seleniumCreate.inputProjDesc("Selenium Test Project with multiple Applications and analysed using advanced options");
+		descriptionPage.inputProjName("Selenium06Test");
+		assertTrue(descriptionPage.nextEnabled());
+		descriptionPage.inputProjDesc("Selenium Test Project with multiple Applications and analysed using advanced options");
 
 		// checks that it redirects to the correct page
-		seleniumCreate.clickNext();
+		descriptionPage.clickNext();
 
-		Thread.sleep(5000);
-		assertTrue(seleniumCreate.checkURL().endsWith("/add-applications"));
+		Thread.sleep(1000);
+		assertTrue(applicationsPage.checkURL().endsWith("/add-applications"));
 
 		// checks that the upload panel is active & the next button is enabled
-		assertEquals("Upload", seleniumCreate.activePanel());
-		assertFalse(seleniumCreate.nextEnabled());
+		assertEquals("Upload", applicationsPage.activePanel());
+		assertFalse(applicationsPage.nextEnabled());
 
-		seleniumCreate.clickChooseFiles();
+		applicationsPage.clickChooseFiles();
 
-		seleniumCreate.robotCancel();
+		applicationsPage.robotCancel();
 		Thread.sleep(5000);
 		// checks that the user has been returned to the correct page
-		assertTrue(seleniumCreate.checkURL().endsWith("/add-applications"));
+		assertTrue(applicationsPage.checkURL().endsWith("/add-applications"));
 		// checks that there are no files pulled up
-		assertTrue(seleniumCreate.voidFile());
+		assertTrue(applicationsPage.voidFile());
 
-		seleniumCreate.clickChooseFiles();
+		applicationsPage.clickChooseFiles();
         File file = new File("src/test/resources/test-archives/AdministracionEfectivo.ear");
-		seleniumCreate.robotSelectFile(file.getAbsolutePath());
+		applicationsPage.robotSelectFile(file.getAbsolutePath());
 		// checks that the uploaded file is green and has the correct information.
-		assertEquals("AdministracionEfectivo.ear (60.161 MB):rgba(63, 156, 53, 1)", seleniumCreate.checkFileInfo(1));
+		assertEquals("AdministracionEfectivo.ear (60.161 MB):rgba(63, 156, 53, 1)", applicationsPage.checkFileInfo(1));
 
 		// uploads AdditionWithSecurity-EAR-0.01.ear
         file = new File("src/test/resources/test-archives/AdditionWithSecurity-EAR-0.01.ear");
-		seleniumCreate.robotSelectFile(file.getAbsolutePath());
+		applicationsPage.robotSelectFile(file.getAbsolutePath());
 		// checks that the uploaded file is green and has the correct information.
-		assertEquals("AdditionWithSecurity-EAR-0.01.ear (36.11 MB):rgba(63, 156, 53, 1)", seleniumCreate.checkFileInfo(2));
+		assertEquals("AdditionWithSecurity-EAR-0.01.ear (36.11 MB):rgba(63, 156, 53, 1)", applicationsPage.checkFileInfo(2));
 
         file = new File("src/test/resources/test-archives/arit-ear-0.8.1-SNAPSHOT.ear");
-		seleniumCreate.robotSelectFile(file.getAbsolutePath());
-		assertEquals("arit-ear-0.8.1-SNAPSHOT.ear (3.978 MB):rgba(63, 156, 53, 1)", seleniumCreate.checkFileInfo(3));
+		applicationsPage.robotSelectFile(file.getAbsolutePath());
+		assertEquals("arit-ear-0.8.1-SNAPSHOT.ear (3.978 MB):rgba(63, 156, 53, 1)", applicationsPage.checkFileInfo(3));
 
-		seleniumCreate.robotCancel();
-		assertTrue(seleniumCreate.nextEnabled());
+		applicationsPage.robotCancel();
+		assertTrue(applicationsPage.nextEnabled());
 
-		assertTrue(seleniumCreate.nextEnabled());
-		seleniumCreate.clickNext();
+		assertTrue(applicationsPage.nextEnabled());
+		applicationsPage.clickNext();
 
-		assertEquals("Migration to JBoss EAP 7", seleniumCreate.transformationPath());
+		configureAnalysisPage = new ConfigureAnalysisPage();
+
+		assertEquals("Migration to JBoss EAP 7", configureAnalysisPage.transformationPath());
 
 		//looks through the first level of the include packages 
 		assertEquals(
 				"1\nantlr\ncom\njavassist\njavax\njunit\nmx\nnet\noracle\norg\nrepackage\nschemaorg_apache_xmlbeans",
-				seleniumCreate.findPackages());
+				configureAnalysisPage.findPackages());
 		// checks that the three more detailed dialogue are compressed
-		assertTrue(seleniumCreate.collapesdInfo());
+		assertTrue(configureAnalysisPage.collapesdInfo());
 
 		//this will go through the packages, to the bottom level and check then uncheck it.
-		assertTrue(seleniumCreate.testPackages(1));
-		assertFalse(seleniumCreate.testEmptyPackages(1));
+		assertTrue(configureAnalysisPage.testPackages(1));
+		assertFalse(configureAnalysisPage.testEmptyPackages(1));
 
 		//opens the exclude packages section
-		assertTrue(seleniumCreate.isCollapsed("Exclude packages"));
-		seleniumCreate.clickCollapsed("Exclude packages");
-		assertFalse(seleniumCreate.isCollapsed("Exclude packages"));
+		assertTrue(configureAnalysisPage.isCollapsed("Exclude packages"));
+		configureAnalysisPage.clickCollapsed("Exclude packages");
+		assertFalse(configureAnalysisPage.isCollapsed("Exclude packages"));
 
 		//this will go through the package system under exclude packages
-		assertTrue(seleniumCreate.testPackages(2));
-		assertFalse(seleniumCreate.testEmptyPackages(2));
+		assertTrue(configureAnalysisPage.testPackages(2));
+		assertFalse(configureAnalysisPage.testEmptyPackages(2));
 
 		//opens the Advanced options section
-		seleniumCreate.clickCollapsed("Advanced options");
+		configureAnalysisPage.clickCollapsed("Advanced options");
 
 		//user advanced options, this adds a new option
-		seleniumCreate.addOptions();
-		seleniumCreate.optionsDropdown("enableCompatibleFilesReport");
-		seleniumCreate.toggleValue(1);
-		seleniumCreate.addOption(1);
-		assertTrue(seleniumCreate.value(1));
+		configureAnalysisPage.addOptions();
+		configureAnalysisPage.optionsDropdown("enableCompatibleFilesReport");
+		configureAnalysisPage.toggleValue(1);
+		configureAnalysisPage.addOption(1);
+		assertTrue(configureAnalysisPage.value(1));
 
 		//runs the project with the above specifications
-		seleniumCreate.saveAndRun();
+		configureAnalysisPage.saveAndRun();
 
 		System.out.println(" About to Save and Run");
 
-		assertTrue(seleniumCreate.checkProgressBar());
-		assertTrue(seleniumCreate.analysisResultsComplete(1));
+		assertTrue(configureAnalysisPage.checkProgressBar());
+		assertTrue(configureAnalysisPage.analysisResultsComplete(1));
 
 	}
 
